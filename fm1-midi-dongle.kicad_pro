@@ -1,0 +1,7 @@
+{
+  "board": {"design_settings": {}},
+  "meta": {"filename": "fm1-midi-dongle.kicad_pro", "version": 1},
+  "schematic": {"legacy_lib_dir": "", "legacy_lib_list": []},
+  "sheets": [["7f2a1c4e-0b3d-4c1a-9e8f-5a6b7c8d9e0f", "Root"]],
+  "text_variables": {}
+}

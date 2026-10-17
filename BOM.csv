@@ -1,0 +1,23 @@
+Ref,Qty,Part,Value / note,Package,LCSC,JLCPCB tier,Price 1-10 (USD),Price 1k (USD),Verified
+U1,1,CH32X035G8U6,RISC-V MCU with USB FS host; the TSSOP-20 F7P6 has NO host,QFN-28 4x4,C7437027,Extended,0.54,0.27,yes (datasheet V2.3 + LCSC + JLCPCB)
+U2,1,XC6206P332MR,3.3 V LDO 200 mA,SOT-23-3,C5446,Basic,0.15,0.10,yes
+U3,1,SY6280AAC,Host VBUS load switch; Ilim = 6800/Rset,SOT-23-5,C55136,Extended,0.09,0.06,yes (LCSC + datasheet)
+U4,1,H11L1SM,MIDI IN optocoupler Schmitt output 3-16 V,SOP-6,C899473,Extended,0.68,0.33,yes
+J1,1,USB-C male plug SHOU HAN TYPE-C 24P-GTJB 040,To the FM-1; JLCPCB Standard-assembly only; PCB thickness NOT verified,SMD 24P,C3151751,Extended,0.13,0.07,partial (datasheet did not load)
+J2,1,USB-C female TYPE-C-31-M-12,5 V power in only,SMD 16P,C165948,Extended,0.17,0.10,yes
+J3,1,PJ-320B,MIDI OUT 3.5 mm TRS type A; pole count not confirmed on LCSC page,SMD,C18594,Extended,0.06,0.035,partial
+J4,1,PJ-320B,MIDI IN 3.5 mm TRS type A,SMD,C18594,Extended,0.06,0.035,partial
+R1,1,Resistor,56k (Rp on J1 CC: FM-1 sees a host),0603,basic,Basic,,,n/a
+"R2,R3",2,Resistor,5.1k (Rd on J2 CC1 CC2: charger supplies 5 V),0603,basic,Basic,,,n/a
+R4,1,Resistor,6.8k (U3 ISET: 1 A limit),0603,basic,Basic,,,n/a
+"R5,R6",2,Resistor,15k (USB host D+ D- pull-downs) - confirm against CH32X035 RM whether internal pull-downs exist,0603,basic,Basic,,,unverified
+R7,1,Resistor,10 Ω (MIDI OUT tip series),0603,basic,Basic,,,n/a
+R8,1,Resistor,33 Ω (MIDI OUT ring from 3V3),0603,basic,Basic,,,n/a
+R9,1,Resistor,220 Ω (MIDI IN LED series inside the loop; MIDI spec 220 Ω at 5 V),0603,basic,Basic,,,n/a
+R10,1,Resistor,4.7k-10k (U4 output pull-up to 3V3),0603,basic,Basic,,,n/a
+R11,1,Resistor,1k (status LED),0603,basic,Basic,,,n/a
+D1,1,Diode,1N4148W (reverse protection across U4 LED),SOD-123,basic,Basic,,,n/a
+D2,1,LED,status,0603,basic,Basic,,,n/a
+C1-C6,6,Capacitor,100 nF x4 + 1 µF x2 (VDD / LDO in-out / U3),0603,basic,Basic,,,n/a
+R12,1,Resistor,100k (U3 EN pull-down: VBUS off until firmware enables),0603,basic,Basic,,,n/a
+C5,1,Capacitor,100 nF (U4 VCC decoupling),0603,basic,Basic,,,n/a

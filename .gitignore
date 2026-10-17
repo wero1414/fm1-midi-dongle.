@@ -1,0 +1,12 @@
+# KiCad local/user files
+*.kicad_prl
+*-backups/
+*.bak
+*.kicad_sch-bak
+*.kicad_pcb-bak
+_autosave-*
+fp-info-cache
+# outputs
+*.zip
+gerbers/
+__pycache__/
