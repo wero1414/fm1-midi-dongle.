@@ -7,17 +7,18 @@ J1,1,USB-C male plug SHOU HAN TYPE-C 24P-GTJB 040,To the FM-1; JLCPCB Standard-a
 J2,1,USB-C female TYPE-C-31-M-12,5 V power in only,SMD 16P,C165948,Extended,0.17,0.10,yes
 J3,1,PJ-320B,MIDI OUT 3.5 mm TRS type A; pole count not confirmed on LCSC page,SMD,C18594,Extended,0.06,0.035,partial
 J4,1,PJ-320B,MIDI IN 3.5 mm TRS type A,SMD,C18594,Extended,0.06,0.035,partial
-R1,1,Resistor,56k (Rp on J1 CC: FM-1 sees a host),0603,basic,Basic,,,n/a
-"R2,R3",2,Resistor,5.1k (Rd on J2 CC1 CC2: charger supplies 5 V),0603,basic,Basic,,,n/a
-R4,1,Resistor,6.8k (U3 ISET: 1 A limit),0603,basic,Basic,,,n/a
+R1,1,Resistor,56k (Rp on J1 CC: FM-1 sees a host),0603,C23206,Basic,,,verified 2026-10-17
+"R2,R3",2,Resistor,5.1k (Rd on J2 CC1 CC2: charger supplies 5 V),0603,C23186,Basic,,,verified 2026-10-17
+R4,1,Resistor,6.8k (U3 ISET: 1 A limit),0603,C23212,Basic,,,verified 2026-10-17
 "R5,R6",2,Resistor,15k (USB host D+ D- pull-downs) - confirm against CH32X035 RM whether internal pull-downs exist,0603,basic,Basic,,,unverified
-R7,1,Resistor,10 Ω (MIDI OUT tip series),0603,basic,Basic,,,n/a
-R8,1,Resistor,33 Ω (MIDI OUT ring from 3V3),0603,basic,Basic,,,n/a
-R9,1,Resistor,220 Ω (MIDI IN LED series inside the loop; MIDI spec 220 Ω at 5 V),0603,basic,Basic,,,n/a
-R10,1,Resistor,4.7k-10k (U4 output pull-up to 3V3),0603,basic,Basic,,,n/a
-R11,1,Resistor,1k (status LED),0603,basic,Basic,,,n/a
-D1,1,Diode,1N4148W (reverse protection across U4 LED),SOD-123,basic,Basic,,,n/a
-D2,1,LED,status,0603,basic,Basic,,,n/a
-C1-C6,6,Capacitor,100 nF x4 + 1 µF x2 (VDD / LDO in-out / U3),0603,basic,Basic,,,n/a
-R12,1,Resistor,100k (U3 EN pull-down: VBUS off until firmware enables),0603,basic,Basic,,,n/a
-C5,1,Capacitor,100 nF (U4 VCC decoupling),0603,basic,Basic,,,n/a
+R7,1,Resistor,10 Ω (MIDI OUT tip series),0603,C22859,Basic,,,verified 2026-10-17
+R8,1,Resistor,33 Ω (MIDI OUT ring from 3V3),0603,C23140,Basic,,,verified 2026-10-17
+R9,1,Resistor,220 Ω (MIDI IN LED series inside the loop; MIDI spec 220 Ω at 5 V),0603,C22962,Basic,,,verified 2026-10-17
+R10,1,Resistor,10k (U4 output pull-up to 3V3),0603,C25804,Basic,,,verified 2026-10-17
+R11,1,Resistor,1k (status LED),0603,C21190,Basic,,,verified 2026-10-17
+D1,1,Diode,1N4148W (reverse protection across U4 LED),SOD-123,C81598,Basic,,,verified 2026-10-17
+D2,1,LED,status,0603,C72043,Basic,,,verified 2026-10-17
+"C4,C5",2,Capacitor,100 nF 50 V X7R (U1 VDD / U4 VCC),0603,C14663,Basic,,,verified 2026-10-17
+"C1,C2,C3",3,Capacitor,1 µF 50 V X5R (LDO in / LDO out / U3 out),0603,C15849,Basic,,,verified 2026-10-17 (page showed out of stock; re-check)
+R12,1,Resistor,100k (U3 EN pull-down: VBUS off until firmware enables),0603,C25803,Basic,,,verified 2026-10-17
+J5,1,Pin header 1x3 2.54 mm (SDI: 3V3 / DIO / GND),break from 1x40 strip,THT,C2337,Basic,,,verified 2026-10-17

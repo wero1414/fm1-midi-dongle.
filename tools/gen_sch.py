@@ -151,7 +151,7 @@ class Sch:
             ('Datasheet', '~', x, y, True),
         ]
         if lcsc:
-            props.append(('LCSC', lcsc, x, y, True))
+            props.append(('LCSC#', lcsc, x, y, True))
         for k, v in extra:
             props.append((k, v, x, y, True))
         s = [f'\t(symbol (lib_id "{key}") (at {x:g} {y:g} 0) (unit 1) (exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no)',
@@ -226,24 +226,24 @@ def main():
              'A5': 'CC1_IN', 'B5': 'CC2_IN'},
             footprint='Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12', lcsc='C165948',
             nc=('A6', 'A7', 'B6', 'B7', 'A8', 'B8'))
-    s.place('Device', 'R', 'R2', '5.1k', 75, 55, {'1': 'CC1_IN', '2': 'GND'}, footprint=R)
-    s.place('Device', 'R', 'R3', '5.1k', 85, 55, {'1': 'CC2_IN', '2': 'GND'}, footprint=R)
+    s.place('Device', 'R', 'R2', '5.1k', 75, 55, {'1': 'CC1_IN', '2': 'GND'}, footprint=R, lcsc='C23186')
+    s.place('Device', 'R', 'R3', '5.1k', 85, 55, {'1': 'CC2_IN', '2': 'GND'}, footprint=R, lcsc='C23186')
 
     # ---- 3.3 V regulator
     s.place('Regulator_Linear', 'XC6206PxxxMR', 'U2', 'XC6206P332MR', 110, 40,
             {'3': '+5V_IN', '2': '+3V3', '1': 'GND'}, footprint='Package_TO_SOT_SMD:SOT-23-3', lcsc='C5446')
-    s.place('Device', 'C', 'C1', '1u', 95, 50, {'1': '+5V_IN', '2': 'GND'}, footprint=C)
-    s.place('Device', 'C', 'C2', '1u', 125, 50, {'1': '+3V3', '2': 'GND'}, footprint=C)
+    s.place('Device', 'C', 'C1', '1u', 95, 50, {'1': '+5V_IN', '2': 'GND'}, footprint=C, lcsc='C15849')
+    s.place('Device', 'C', 'C2', '1u', 125, 50, {'1': '+3V3', '2': 'GND'}, footprint=C, lcsc='C15849')
 
     # ---- host VBUS switch
     s.place('fm1_dongle', 'SY6280AAC', 'U3', 'SY6280AAC', 110, 80,
             {'5': '+5V_IN', '1': 'VBUS_FM1', '2': 'GND', '4': 'VBUS_EN', '3': 'ISET'},
             footprint='Package_TO_SOT_SMD:SOT-23-5', lcsc='C55136')
-    s.place('Device', 'R', 'R4', '6.8k', 125, 92, {'1': 'ISET', '2': 'GND'}, footprint=R,
+    s.place('Device', 'R', 'R4', '6.8k', 125, 92, {'1': 'ISET', '2': 'GND'}, footprint=R, lcsc='C23212',
             extra=(('Note', 'Ilim = 6800 / Rset = 1 A'),))
-    s.place('Device', 'R', 'R12', '100k', 95, 92, {'1': 'VBUS_EN', '2': 'GND'}, footprint=R,
+    s.place('Device', 'R', 'R12', '100k', 95, 92, {'1': 'VBUS_EN', '2': 'GND'}, footprint=R, lcsc='C25803',
             extra=(('Note', 'VBUS off until firmware enables it'),))
-    s.place('Device', 'C', 'C3', '1u', 135, 80, {'1': 'VBUS_FM1', '2': 'GND'}, footprint=C)
+    s.place('Device', 'C', 'C3', '1u', 135, 80, {'1': 'VBUS_FM1', '2': 'GND'}, footprint=C, lcsc='C15849')
 
     # ---- MCU
     s.place('MCU_WCH_RiscV', 'CH32X035G8U6', 'U1', 'CH32X035G8U6', 190, 90,
@@ -255,10 +255,10 @@ def main():
             footprint='Package_DFN_QFN:WQFN-28-1EP_4x4mm_P0.4mm_EP2.7x2.7mm', lcsc='C7437027',
             nc=('1', '3', '4', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '23', '24', '28'),
             extra=(('Note', 'QFN28 F7P6/TSSOP20 has NO USB host; G8U6 required. footprint = KiCad symbol default; EP size not in the datasheet text, verify on the drawing.'),))
-    s.place('Device', 'C', 'C4', '100n', 230, 50, {'1': '+3V3', '2': 'GND'}, footprint=C)
-    s.place('Device', 'R', 'R5', '15k', 230, 100, {'1': 'USB_DM', '2': 'GND'}, footprint=R,
+    s.place('Device', 'C', 'C4', '100n', 230, 50, {'1': '+3V3', '2': 'GND'}, footprint=C, lcsc='C14663')
+    s.place('Device', 'R', 'R5', '15k', 230, 100, {'1': 'USB_DM', '2': 'GND'}, footprint=R, lcsc='C22809',
             extra=(('Note', 'host-side pull-down; drop if the X035 host port has internal ones (RM check)'),))
-    s.place('Device', 'R', 'R6', '15k', 240, 100, {'1': 'USB_DP', '2': 'GND'}, footprint=R)
+    s.place('Device', 'R', 'R6', '15k', 240, 100, {'1': 'USB_DP', '2': 'GND'}, footprint=R, lcsc='C22809')
 
     # ---- J1 male plug to the FM-1 (dongle is the host / DFP)
     s.place('Connector', 'USB_C_Plug_USB2.0', 'J1', 'USB-C plug to FM-1', 280, 90,
@@ -267,12 +267,12 @@ def main():
              'A5': 'CC_FM1', 'A6': 'USB_DP', 'A7': 'USB_DM'},
             footprint='', lcsc='C3151751', nc=('B5',),
             extra=(('Note', 'SHOU HAN TYPE-C 24P-GTJB 040; footprint from EasyEDA, PCB thickness unverified'),))
-    s.place('Device', 'R', 'R1', '56k', 310, 60, {'1': '+5V_IN', '2': 'CC_FM1'}, footprint=R,
+    s.place('Device', 'R', 'R1', '56k', 310, 60, {'1': '+5V_IN', '2': 'CC_FM1'}, footprint=R, lcsc='C23206',
             extra=(('Note', 'Rp: the FM-1 sees a default-USB host'),))
 
     # ---- MIDI OUT, TRS type A, 3.3 V
-    s.place('Device', 'R', 'R7', '10', 180, 150, {'1': 'MIDI_TX', '2': 'MIDI_TIP_OUT'}, footprint=R)
-    s.place('Device', 'R', 'R8', '33', 190, 150, {'1': '+3V3', '2': 'MIDI_RING_OUT'}, footprint=R)
+    s.place('Device', 'R', 'R7', '10', 180, 150, {'1': 'MIDI_TX', '2': 'MIDI_TIP_OUT'}, footprint=R, lcsc='C22859')
+    s.place('Device', 'R', 'R8', '33', 190, 150, {'1': '+3V3', '2': 'MIDI_RING_OUT'}, footprint=R, lcsc='C23140')
     s.place('Connector_Audio', 'AudioJack3', 'J3', 'MIDI OUT TRS', 210, 150,
             {'T': 'MIDI_TIP_OUT', 'R': 'MIDI_RING_OUT', 'S': 'GND'},
             footprint='Connector_Audio:Jack_3.5mm_PJ320D_Horizontal', lcsc='C18594',
@@ -283,22 +283,22 @@ def main():
             {'T': 'MIDI_IN_TIP', 'R': 'MIDI_IN_RING'}, nc=('S',),
             footprint='Connector_Audio:Jack_3.5mm_PJ320D_Horizontal', lcsc='C18594',
             extra=(('Note', 'sleeve left open at the receiver (MIDI spec)'),))
-    s.place('Device', 'R', 'R9', '220', 60, 140, {'1': 'MIDI_IN_TIP', '2': 'OPTO_A'}, footprint=R)
-    s.place('Device', 'D', 'D1', '1N4148W', 75, 150, {'1': 'OPTO_A', '2': 'MIDI_IN_RING'}, footprint='Diode_SMD:D_SOD-123',
+    s.place('Device', 'R', 'R9', '220', 60, 140, {'1': 'MIDI_IN_TIP', '2': 'OPTO_A'}, footprint=R, lcsc='C22962')
+    s.place('Device', 'D', 'D1', '1N4148W', 75, 150, {'1': 'OPTO_A', '2': 'MIDI_IN_RING'}, footprint='Diode_SMD:D_SOD-123', lcsc='C81598',
             extra=(('Note', 'reverse-polarity protection across the opto LED'),))
     s.place('Isolator', 'H11L1', 'U4', 'H11L1SM', 100, 150,
             {'1': 'OPTO_A', '2': 'MIDI_IN_RING', '4': 'MIDI_RX', '5': 'GND', '6': '+3V3'},
             footprint='Package_DIP:SMDIP-6_W7.62mm', lcsc='C899473',
             extra=(('Note', 'SMD gull-wing 6-pin; footprint to verify against onsemi drawing'),))
-    s.place('Device', 'R', 'R10', '10k', 125, 140, {'1': '+3V3', '2': 'MIDI_RX'}, footprint=R)
-    s.place('Device', 'C', 'C5', '100n', 100, 130, {'1': '+3V3', '2': 'GND'}, footprint=C)
+    s.place('Device', 'R', 'R10', '10k', 125, 140, {'1': '+3V3', '2': 'MIDI_RX'}, footprint=R, lcsc='C25804')
+    s.place('Device', 'C', 'C5', '100n', 100, 130, {'1': '+3V3', '2': 'GND'}, footprint=C, lcsc='C14663')
 
     # ---- status LED + SDI header
-    s.place('Device', 'R', 'R11', '1k', 250, 150, {'1': 'LED', '2': 'LED_K'}, footprint=R)
-    s.place('Device', 'LED', 'D2', 'green', 265, 160, {'2': 'LED_K', '1': 'GND'}, footprint='LED_SMD:LED_0603_1608Metric')
+    s.place('Device', 'R', 'R11', '1k', 250, 150, {'1': 'LED', '2': 'LED_K'}, footprint=R, lcsc='C21190')
+    s.place('Device', 'LED', 'D2', 'green', 265, 160, {'2': 'LED_K', '1': 'GND'}, footprint='LED_SMD:LED_0603_1608Metric', lcsc='C72043')
     s.place('Connector_Generic', 'Conn_01x03', 'J5', 'SDI (WCH-LinkE)', 290, 150,
             {'1': '+3V3', '2': 'SDI_DIO', '3': 'GND'},
-            footprint='Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical',
+            footprint='Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical', lcsc='C2337',
             extra=(('Note', '3V3 / DIO (PC18, pin 25) / GND'),))
 
     # ---- power symbols and flags (one per net, tied by label)
