@@ -21,4 +21,4 @@ D2,1,LED,status,0603,C72043,Basic,,,verified 2026-10-17
 "C4,C5",2,Capacitor,100 nF 50 V X7R (U1 VDD / U4 VCC),0603,C14663,Basic,,,verified 2026-10-17
 "C1,C2,C3",3,Capacitor,1 µF 50 V X5R (LDO in / LDO out / U3 out),0603,C15849,Basic,,,verified 2026-10-17 (page showed out of stock; re-check)
 R12,1,Resistor,100k (U3 EN pull-down: VBUS off until firmware enables),0603,C25803,Basic,,,verified 2026-10-17
-J5,1,Pin header 1x3 2.54 mm (SDI: 3V3 / DIO / GND),break from 1x40 strip,THT,C2337,Basic,,,verified 2026-10-17
+"TP1,TP2,TP3",3,Pad,SDI programming pads 1.5 mm (3V3 / DIO / GND) for WCH-LinkE wires,bare copper,none,,0,0,no part

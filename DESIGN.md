@@ -91,7 +91,7 @@ Footprints assigned (placeholders marked):
 | J1 | none | take from EasyEDA (LCSC C3151751); PCB thickness unknown |
 | J2 | Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12 | exact part |
 | J3, J4 | Connector_Audio:Jack_3.5mm_PJ320D_Horizontal | placeholder for PJ-320B |
-| J5 | PinHeader_1x03_P2.54mm_Vertical | ok |
+| TP1-3 | TestPoint:TestPoint_Pad_1.5x1.5mm | bare pads for the LinkE wires, no part |
 | R, C, D1, D2 | 0603 / SOD-123 | ok |
 
 Added in the schematic beyond the BOM list: R12 100k pull-down on VBUS_EN (VBUS stays off until firmware

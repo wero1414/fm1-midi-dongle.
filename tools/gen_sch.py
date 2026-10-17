@@ -296,10 +296,11 @@ def main():
     # ---- status LED + SDI header
     s.place('Device', 'R', 'R11', '1k', 250, 150, {'1': 'LED', '2': 'LED_K'}, footprint=R, lcsc='C21190')
     s.place('Device', 'LED', 'D2', 'green', 265, 160, {'2': 'LED_K', '1': 'GND'}, footprint='LED_SMD:LED_0603_1608Metric', lcsc='C72043')
-    s.place('Connector_Generic', 'Conn_01x03', 'J5', 'SDI (WCH-LinkE)', 290, 150,
-            {'1': '+3V3', '2': 'SDI_DIO', '3': 'GND'},
-            footprint='Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical', lcsc='C2337',
-            extra=(('Note', '3V3 / DIO (PC18, pin 25) / GND'),))
+    # programming: three bare pads for the WCH-LinkE wires (no connector on a board this small)
+    for ref, net, x in (('TP1', '+3V3', 285), ('TP2', 'SDI_DIO', 295), ('TP3', 'GND', 305)):
+        s.place('Connector', 'TestPoint', ref, net, x, 150, {'1': net},
+                footprint='TestPoint:TestPoint_Pad_1.5x1.5mm',
+                extra=(('Note', 'SDI pad: 3V3 / DIO (PC18, pin 25) / GND'),))
 
     # ---- power symbols and flags (one per net, tied by label)
     s.power('+5V', '#PWR01', 40, 190, net='+5V_IN')

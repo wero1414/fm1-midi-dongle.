@@ -18,7 +18,7 @@ before ordering anything (USB-C plug footprint and PCB thickness, jack footprint
 - USB-C female for 5 V in only (5.1 kΩ Rd on CC1/CC2), no data.
 - MIDI OUT: 3.3 V TRS type A (10 Ω tip, 33 Ω ring).
 - MIDI IN: H11L1SM optocoupler, 220 Ω, 1N4148 reverse diode, TRS type A.
-- Programming: WCH-LinkE on a 3-pin SDI header (3V3 / PC18 DIO / GND).
+- Programming: WCH-LinkE on three bare pads (3V3 / PC18 DIO / GND), no connector.
 
 ## License
 Hardware: CERN-OHL-P-2.0 (proposed; change if you prefer).
