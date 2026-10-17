@@ -35,7 +35,7 @@ def parse(s):
 
 def symbol_block_text(libtext, name):
     """raw text of the top-level (symbol "name" ...) block"""
-    m = re.search(r'\n\t\(symbol "%s"' % re.escape(name), libtext)
+    m = re.search(r'\n[ \t]*\(symbol "%s"' % re.escape(name), libtext)
     if not m:
         raise SystemExit(f'symbol {name} not found')
     i = m.start() + 1
@@ -79,8 +79,30 @@ def lib_text(lib):
     return _libcache[lib]
 
 
+def project_symbol(name):
+    """symbols of the project library fm1_dongle: SY6280AAC drawn here, the USB-C plug and the PJ-320D jack
+    converted from EasyEDA/LCSC with easyeda2kicad (tools/easyeda/), renamed and pointed at fm1_dongle footprints"""
+    if name == 'SY6280AAC':
+        return SY6280_BLOCK
+    src, orig = PROJECT_SYMBOLS[name]
+    txt = (HERE / 'tools' / 'easyeda' / src).read_text()
+    block = symbol_block_text(txt, orig)
+    block = block.replace(f'"{orig}_', f'"{name}_').replace(f'(symbol "{orig}"', f'(symbol "{name}"', 1)
+    block = block.replace('"jlc:', '"fm1_dongle:').replace('(pin unspecified ', '(pin passive ')
+    return block
+
+
+PROJECT_SYMBOLS = {
+    'USB-C_Plug_GTJB040': ('jlc_C3151751_etc.kicad_sym', 'TYPE-C24P-GTJB040'),
+    'PJ-320D': ('jlc_C521460.kicad_sym', 'PJ-320D_C521460'),
+}
+
+
 def load_symbol(lib, name):
     """(lib_symbols entry text, pins). Derived symbols ("extends") are flattened onto their parent."""
+    if lib == 'fm1_dongle':
+        block = project_symbol(name)
+        return block.replace(f'(symbol "{name}"', f'(symbol "{lib}:{name}"', 1), symbol_pins(block)
     txt = lib_text(lib)
     block = symbol_block_text(txt, name)
     tree = parse(block)[0]
@@ -131,14 +153,10 @@ class Sch:
     def use(self, lib, name):
         key = f'{lib}:{name}'
         if key not in self.libs:
-            if key == 'fm1_dongle:SY6280AAC':
-                self.libs[key] = SY6280_BLOCK
-                self.pins[key] = symbol_pins(SY6280_BLOCK)
-            else:
-                self.libs[key], self.pins[key] = load_symbol(lib, name)
+            self.libs[key], self.pins[key] = load_symbol(lib, name)
         return key
 
-    def place(self, lib, name, ref, value, x, y, nets, footprint='', lcsc='', nc=(), hidden_value=False, extra=()):
+    def place(self, lib, name, ref, value, x, y, nets, footprint='', lcsc='', nc=(), hidden_value=False, extra=(), in_bom=True):
         """nets: {pin_number: netname}; nc: pin numbers that get a no-connect flag.
         Pins listed in neither are left for the caller to connect by position (not used here)."""
         key = self.use(lib, name)
@@ -154,7 +172,7 @@ class Sch:
             props.append(('LCSC#', lcsc, x, y, True))
         for k, v in extra:
             props.append((k, v, x, y, True))
-        s = [f'\t(symbol (lib_id "{key}") (at {x:g} {y:g} 0) (unit 1) (exclude_from_sim no) (in_bom yes) (on_board yes) (dnp no)',
+        s = [f'\t(symbol (lib_id "{key}") (at {x:g} {y:g} 0) (unit 1) (exclude_from_sim no) (in_bom {"yes" if in_bom else "no"}) (on_board yes) (dnp no)',
              f'\t\t(uuid "{uid()}")']
         for k, v, px, py, hide in props:
             h = ' (hide yes)' if hide else ''
@@ -220,7 +238,7 @@ def main():
     C = 'Capacitor_SMD:C_0603_1608Metric'
 
     # ---- power in: J2 female USB-C, power only
-    s.place('Connector', 'USB_C_Receptacle_USB2.0_16P', 'J2', 'USB-C power in', 40, 60,
+    s.place('Connector', 'USB_C_Receptacle_USB2.0_16P', 'J2', 'TYPE-C-31-M-12', 40, 60,
             {'A4': '+5V_IN', 'A9': '+5V_IN', 'B4': '+5V_IN', 'B9': '+5V_IN',
              'A1': 'GND', 'A12': 'GND', 'B1': 'GND', 'B12': 'GND', 'SH': 'GND',
              'A5': 'CC1_IN', 'B5': 'CC2_IN'},
@@ -231,14 +249,14 @@ def main():
 
     # ---- 3.3 V regulator
     s.place('Regulator_Linear', 'XC6206PxxxMR', 'U2', 'XC6206P332MR', 110, 40,
-            {'3': '+5V_IN', '2': '+3V3', '1': 'GND'}, footprint='Package_TO_SOT_SMD:SOT-23-3', lcsc='C5446')
+            {'3': '+5V_IN', '2': '+3V3', '1': 'GND'}, footprint='fm1_dongle:SOT-23-3_L2.9-W1.6-P1.90-LS2.8-BR', lcsc='C5446')
     s.place('Device', 'C', 'C1', '1u', 95, 50, {'1': '+5V_IN', '2': 'GND'}, footprint=C, lcsc='C15849')
     s.place('Device', 'C', 'C2', '1u', 125, 50, {'1': '+3V3', '2': 'GND'}, footprint=C, lcsc='C15849')
 
     # ---- host VBUS switch
     s.place('fm1_dongle', 'SY6280AAC', 'U3', 'SY6280AAC', 110, 80,
             {'5': '+5V_IN', '1': 'VBUS_FM1', '2': 'GND', '4': 'VBUS_EN', '3': 'ISET'},
-            footprint='Package_TO_SOT_SMD:SOT-23-5', lcsc='C55136')
+            footprint='fm1_dongle:SOT-23-5_L3.0-W1.7-P0.95-LS2.8-BL', lcsc='C55136')
     s.place('Device', 'R', 'R4', '6.8k', 125, 92, {'1': 'ISET', '2': 'GND'}, footprint=R, lcsc='C23212',
             extra=(('Note', 'Ilim = 6800 / Rset = 1 A'),))
     s.place('Device', 'R', 'R12', '100k', 95, 92, {'1': 'VBUS_EN', '2': 'GND'}, footprint=R, lcsc='C25803',
@@ -252,54 +270,55 @@ def main():
              '21': 'MIDI_TX', '22': 'MIDI_RX',
              '25': 'SDI_DIO',
              '5': 'VBUS_EN', '6': 'LED'},
-            footprint='Package_DFN_QFN:WQFN-28-1EP_4x4mm_P0.4mm_EP2.7x2.7mm', lcsc='C7437027',
+            footprint='fm1_dongle:QFN-28_L4.0-W4.0-P0.40-BL-EP2.8', lcsc='C7437027',
             nc=('1', '3', '4', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '23', '24', '28'),
-            extra=(('Note', 'QFN28 F7P6/TSSOP20 has NO USB host; G8U6 required. footprint = KiCad symbol default; EP size not in the datasheet text, verify on the drawing.'),))
+            extra=(('Note', 'QFN28 F7P6/TSSOP20 has NO USB host; G8U6 required. footprint from EasyEDA/LCSC for C7437027 (EP 2.8 mm).'),))
     s.place('Device', 'C', 'C4', '100n', 230, 50, {'1': '+3V3', '2': 'GND'}, footprint=C, lcsc='C14663')
     s.place('Device', 'R', 'R5', '15k', 230, 100, {'1': 'USB_DM', '2': 'GND'}, footprint=R, lcsc='C22809',
             extra=(('Note', 'host-side pull-down; drop if the X035 host port has internal ones (RM check)'),))
     s.place('Device', 'R', 'R6', '15k', 240, 100, {'1': 'USB_DP', '2': 'GND'}, footprint=R, lcsc='C22809')
 
     # ---- J1 male plug to the FM-1 (dongle is the host / DFP)
-    s.place('Connector', 'USB_C_Plug_USB2.0', 'J1', 'USB-C plug to FM-1', 280, 90,
+    s.place('fm1_dongle', 'USB-C_Plug_GTJB040', 'J1', 'TYPE-C 24P-GTJB 040', 280, 90,
             {'A4': 'VBUS_FM1', 'A9': 'VBUS_FM1', 'B4': 'VBUS_FM1', 'B9': 'VBUS_FM1',
-             'A1': 'GND', 'A12': 'GND', 'B1': 'GND', 'B12': 'GND', 'SH': 'GND',
+             'A1': 'GND', 'A12': 'GND', 'B1': 'GND', 'B12': 'GND', '25': 'GND', '26': 'GND',
              'A5': 'CC_FM1', 'A6': 'USB_DP', 'A7': 'USB_DM'},
-            footprint='', lcsc='C3151751', nc=('B5',),
-            extra=(('Note', 'SHOU HAN TYPE-C 24P-GTJB 040; footprint from EasyEDA, PCB thickness unverified'),))
+            footprint='fm1_dongle:USB-C-SMD_TYPE-C-24P-GTJB-040', lcsc='C3151751',
+            nc=('A2', 'A3', 'A8', 'A10', 'A11', 'B2', 'B3', 'B5', 'B6', 'B7', 'B8', 'B10', 'B11'),
+            extra=(('Note', 'SHOU HAN TYPE-C 24P-GTJB 040, board-edge clamp plug: PCB 0.80 +/-0.05 mm, pads on both faces (datasheet p.2); JLCPCB Standard assembly only'),))
     s.place('Device', 'R', 'R1', '56k', 310, 60, {'1': '+5V_IN', '2': 'CC_FM1'}, footprint=R, lcsc='C23206',
             extra=(('Note', 'Rp: the FM-1 sees a default-USB host'),))
 
     # ---- MIDI OUT, TRS type A, 3.3 V
     s.place('Device', 'R', 'R7', '10', 180, 150, {'1': 'MIDI_TX', '2': 'MIDI_TIP_OUT'}, footprint=R, lcsc='C22859')
     s.place('Device', 'R', 'R8', '33', 190, 150, {'1': '+3V3', '2': 'MIDI_RING_OUT'}, footprint=R, lcsc='C23140')
-    s.place('Connector_Audio', 'AudioJack3', 'J3', 'MIDI OUT TRS', 210, 150,
-            {'T': 'MIDI_TIP_OUT', 'R': 'MIDI_RING_OUT', 'S': 'GND'},
-            footprint='Connector_Audio:Jack_3.5mm_PJ320D_Horizontal', lcsc='C18594',
-            extra=(('Note', 'PJ-320B: footprint placeholder is PJ320D, verify'),))
+    s.place('fm1_dongle', 'PJ-320D', 'J3', 'PJ-320D', 210, 150,
+            {'4': 'MIDI_TIP_OUT', '3': 'MIDI_RING_OUT', '1': 'GND', '2': 'GND'},
+            footprint='fm1_dongle:AUDIO-SMD_PJ-320D', lcsc='C521460',
+            extra=(('Note', 'PJ-320D 4-pole: 1 sleeve, 2 ring2, 3 ring1, 4 tip. A TRS plug: tip=4, ring=3, sleeve on 1 and 2'),))
 
     # ---- MIDI IN, isolated
-    s.place('Connector_Audio', 'AudioJack3', 'J4', 'MIDI IN TRS', 40, 150,
-            {'T': 'MIDI_IN_TIP', 'R': 'MIDI_IN_RING'}, nc=('S',),
-            footprint='Connector_Audio:Jack_3.5mm_PJ320D_Horizontal', lcsc='C18594',
-            extra=(('Note', 'sleeve left open at the receiver (MIDI spec)'),))
+    s.place('fm1_dongle', 'PJ-320D', 'J4', 'PJ-320D', 40, 150,
+            {'4': 'MIDI_IN_TIP', '3': 'MIDI_IN_RING'}, nc=('1', '2'),
+            footprint='fm1_dongle:AUDIO-SMD_PJ-320D', lcsc='C521460',
+            extra=(('Note', 'sleeve (1, 2) left open at the receiver (MIDI spec). tip=4, ring=3'),))
     s.place('Device', 'R', 'R9', '220', 60, 140, {'1': 'MIDI_IN_TIP', '2': 'OPTO_A'}, footprint=R, lcsc='C22962')
     s.place('Device', 'D', 'D1', '1N4148W', 75, 150, {'1': 'OPTO_A', '2': 'MIDI_IN_RING'}, footprint='Diode_SMD:D_SOD-123', lcsc='C81598',
             extra=(('Note', 'reverse-polarity protection across the opto LED'),))
     s.place('Isolator', 'H11L1', 'U4', 'H11L1SM', 100, 150,
             {'1': 'OPTO_A', '2': 'MIDI_IN_RING', '4': 'MIDI_RX', '5': 'GND', '6': '+3V3'},
-            footprint='Package_DIP:SMDIP-6_W7.62mm', lcsc='C899473',
-            extra=(('Note', 'SMD gull-wing 6-pin; footprint to verify against onsemi drawing'),))
+            footprint='fm1_dongle:SOP-6_L8.5-W6.4-P2.54-LS9.2-BL', lcsc='C899473',
+            extra=(('Note', 'footprint from EasyEDA/LCSC for C899473'),))
     s.place('Device', 'R', 'R10', '10k', 125, 140, {'1': '+3V3', '2': 'MIDI_RX'}, footprint=R, lcsc='C25804')
     s.place('Device', 'C', 'C5', '100n', 100, 130, {'1': '+3V3', '2': 'GND'}, footprint=C, lcsc='C14663')
 
     # ---- status LED + SDI header
     s.place('Device', 'R', 'R11', '1k', 250, 150, {'1': 'LED', '2': 'LED_K'}, footprint=R, lcsc='C21190')
-    s.place('Device', 'LED', 'D2', 'green', 265, 160, {'2': 'LED_K', '1': 'GND'}, footprint='LED_SMD:LED_0603_1608Metric', lcsc='C72043')
+    s.place('Device', 'LED', 'D2', 'LED green 0603', 265, 160, {'2': 'LED_K', '1': 'GND'}, footprint='LED_SMD:LED_0603_1608Metric', lcsc='C72043')
     # programming: three bare pads for the WCH-LinkE wires (no connector on a board this small)
     for ref, net, x in (('TP1', '+3V3', 285), ('TP2', 'SDI_DIO', 295), ('TP3', 'GND', 305)):
         s.place('Connector', 'TestPoint', ref, net, x, 150, {'1': net},
-                footprint='TestPoint:TestPoint_Pad_1.5x1.5mm',
+                footprint='TestPoint:TestPoint_Pad_1.5x1.5mm', in_bom=False,
                 extra=(('Note', 'SDI pad: 3V3 / DIO (PC18, pin 25) / GND'),))
 
     # ---- power symbols and flags (one per net, tied by label)
@@ -310,14 +329,16 @@ def main():
     s.power('PWR_FLAG', '#FLG02', 100, 190, net='GND')
 
     s.text('FM-1 MIDI dongle, rev A (netlist-first drawing: every connection is a net label; tidy before layout).\n'
-           'Open items before ordering: J1 plug footprint + PCB thickness; PJ-320B footprint (placeholder PJ320D);\n'
-           'U4 SMDIP footprint; U1 exposed-pad size; whether the X035 host port has internal D+/D- pull-downs (R5/R6).\n'
+           'JLCPCB build: PCB 0.8 mm (the plug clamps the board edge), all parts top side SMD, footprints from EasyEDA/LCSC.\n'
+           'Open item: whether the X035 host port has internal D+/D- pull-downs (R5/R6).\n'
            'TRS type A: tip = MIDI pin 5 (data), ring = pin 4 (source), sleeve = pin 2.', 150, 185)
 
     s.write(HERE / f'{PROJECT}.kicad_sch')
+    blocks = [SY6280_BLOCK.replace('(symbol "fm1_dongle:SY6280AAC"', '(symbol "SY6280AAC"', 1)] + \
+             [project_symbol(n) for n in PROJECT_SYMBOLS]
     (HERE / 'fm1_dongle.kicad_sym').write_text(
         '(kicad_symbol_lib (version 20241209) (generator "gen_sch") (generator_version "9.0")\n\t'
-        + SY6280_BLOCK.replace('(symbol "fm1_dongle:SY6280AAC"', '(symbol "SY6280AAC"', 1) + '\n)\n')
+        + '\n\t'.join(b.strip('\n') for b in blocks) + '\n)\n')
     (HERE / 'sym-lib-table').write_text(
         '(sym_lib_table (version 7)\n  (lib (name "fm1_dongle")(type "KiCad")(uri "${KIPRJMOD}/fm1_dongle.kicad_sym")(options "")(descr "project symbols"))\n)\n')
     (HERE / f'{PROJECT}.kicad_pro').write_text(

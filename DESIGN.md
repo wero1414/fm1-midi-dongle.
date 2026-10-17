@@ -24,11 +24,11 @@ that sends MIDI over USB (Melodee, SLOOP, Felucca, Hortator, stock).
 ```
 
 ## Connector details
-- J1 (male plug, to the FM-1): the dongle is the host (DFP). Rp = 56 kΩ from 5 V to the CC pin.
+- J1 (male plug, to the FM-1, board-edge clamp type, PCB 0.8 mm): the dongle is the host (DFP). Rp = 56 kΩ from 5 V to the CC pin.
   A captive plug wires one CC pin; the other (VCONN) left open. VBUS from U3 output.
 - J2 (female, power in): Rd = 5.1 kΩ to GND on CC1 and CC2 so a USB-C charger or power bank turns on 5 V.
   D+/D- unconnected.
-- J3/J4 TRS type A: tip = pin 5 (data sink), ring = pin 4 (source), sleeve = pin 2.
+- J3/J4 TRS type A: tip = MIDI pin 5 (data sink), ring = MIDI pin 4 (source), sleeve = MIDI pin 2. On the PJ-320D: tip = pad 4, ring = pad 3, sleeve = pads 1 and 2.
 
 ## Pins verified from the CH32X035 datasheet V2.3 (QFN-28 diagram + pin table)
 | Signal | Pin | Port |
@@ -49,9 +49,8 @@ Free for EN / LED: PA0..PA7 (pins 3..11 area), PB0, PB3, PC0, PC3 - pick during 
 - USB PD / Type-C controller on PC14/CC1 (pin 28) and PC15/CC2 (pin 1) - not used here (J2 is passive).
 
 ## Open items (must be checked before ordering)
-1. J1 datasheet: PCB thickness it accepts and footprint. Did not load from LCSC/JLCPCB. Pull the footprint
-   from EasyEDA (LCSC C3151751) and read the drawing. If it wants 0.8 mm, order the PCB at 0.8 mm.
-2. PJ-320B pole count (LCSC says "stereo"; confirm 3-pole in the drawing).
+1. (closed) J1: datasheet read, PCB 0.80 mm, footprint from EasyEDA.
+2. (closed) jack: PJ-320D C521460, 4-pole, pin map verified.
 3. Whether the X035 USB host port has internal D+/D- pull-downs (reference manual, USBFS host chapter).
    If yes, drop R5/R6.
 4. USB PHY supply: datasheet gives VDD 2.0-5.5 V and no separate PHY rail was found. Design runs the chip
@@ -81,18 +80,31 @@ Free for EN / LED: PA0..PA7 (pins 3..11 area), PB0, PB3, PC0, PC3 - pick during 
 - Regenerate after editing the generator: `python3 tools/gen_sch.py`. Hand edits in KiCad are fine too, but then
   stop using the generator.
 
-Footprints assigned (placeholders marked):
-| Ref | Footprint | Status |
+## Built for JLCPCB assembly (2026-10-17)
+- PCB: 2 layers, **0.8 mm** (the USB-C plug clamps the board edge; its datasheet says T = 0.80 +/- 0.05 mm),
+  all parts SMD on the top side. JLCPCB Economic PCBA accepts 0.8 mm boards; the plug itself is "Standard
+  assembly only" in JLCPCB's library, so a JLCPCB-assembled run is Standard. First five are hand assembled.
+- Footprints for every IC and connector come from EasyEDA/LCSC for the exact LCSC number (easyeda2kicad),
+  in `fm1_dongle.pretty` with 3D models in `fm1_dongle.3dshapes`; the plug and jack symbols too
+  (`tools/easyeda/`). Passives use KiCad's 0603 / SOD-123 footprints.
+- `tools/export_jlc.sh` writes `production/bom_jlcpcb.csv` (Comment, Designator, Footprint, LCSC Part #).
+  The placement file (CPL) comes from the PCB once it is laid out.
+- Jack changed from PJ-320B (its LCSC/EasyEDA entry is a dummy footprint marked "not a PCB-soldered
+  part") to **PJ-320D C521460**, a 4-pole SMD jack with a real footprint, Economic assembly, 2,945 in stock.
+  Pin map from the USAKRO drawing cross-checked against KiCad's named PJ320D footprint (same hole spacing
+  and pad positions): 1 sleeve, 2 ring2, 3 ring1, 4 tip. A TRS plug: tip = 4, ring = 3, sleeve touches 1 and 2.
+
+| Ref | Footprint | Source |
 |---|---|---|
-| U1 | Package_DFN_QFN:WQFN-28-1EP_4x4mm_P0.4mm_EP2.7x2.7mm | KiCad symbol default; 4x4 mm / 0.4 mm pitch confirmed by datasheet, EP size not (drawing is an image) |
-| U2 | Package_TO_SOT_SMD:SOT-23-3 | ok |
-| U3 | Package_TO_SOT_SMD:SOT-23-5 | ok (datasheet pinout: 1 OUT, 2 GND, 3 ISET, 4 EN, 5 IN) |
-| U4 | Package_DIP:SMDIP-6_W7.62mm | placeholder, check onsemi H11L1SM drawing |
-| J1 | none | take from EasyEDA (LCSC C3151751); PCB thickness unknown |
-| J2 | Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12 | exact part |
-| J3, J4 | Connector_Audio:Jack_3.5mm_PJ320D_Horizontal | placeholder for PJ-320B |
-| TP1-3 | TestPoint:TestPoint_Pad_1.5x1.5mm | bare pads for the LinkE wires, no part |
-| R, C, D1, D2 | 0603 / SOD-123 | ok |
+| U1 | fm1_dongle:QFN-28_L4.0-W4.0-P0.40-BL-EP2.8 | EasyEDA C7437027 (4x4 mm, 0.4 mm pitch per datasheet; EP 2.8) |
+| U2 | fm1_dongle:SOT-23-3_L2.9-W1.6-P1.90-LS2.8-BR | EasyEDA C5446 |
+| U3 | fm1_dongle:SOT-23-5_L3.0-W1.7-P0.95-LS2.8-BL | EasyEDA C55136 |
+| U4 | fm1_dongle:SOP-6_L8.5-W6.4-P2.54-LS9.2-BL | EasyEDA C899473 |
+| J1 | fm1_dongle:USB-C-SMD_TYPE-C-24P-GTJB-040 | EasyEDA C3151751; pads A row on F.Cu, B row on B.Cu, shell pads 25/26 |
+| J2 | Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12 | KiCad library footprint made for this exact HRO part |
+| J3, J4 | fm1_dongle:AUDIO-SMD_PJ-320D | EasyEDA C521460 |
+| R, C, D1, D2 | KiCad 0603 / SOD-123 | |
+| TP1-3 | TestPoint:TestPoint_Pad_1.5x1.5mm | bare pads for the LinkE wires, no part, not in the BOM |
 
 Added in the schematic beyond the BOM list: R12 100k pull-down on VBUS_EN (VBUS stays off until firmware
 enables it; SY6280 says EN must not float), C5 100 nF at the optocoupler.

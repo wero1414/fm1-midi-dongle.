@@ -3,10 +3,10 @@ U1,1,CH32X035G8U6,RISC-V MCU with USB FS host; the TSSOP-20 F7P6 has NO host,QFN
 U2,1,XC6206P332MR,3.3 V LDO 200 mA,SOT-23-3,C5446,Basic,0.15,0.10,yes
 U3,1,SY6280AAC,Host VBUS load switch; Ilim = 6800/Rset,SOT-23-5,C55136,Extended,0.09,0.06,yes (LCSC + datasheet)
 U4,1,H11L1SM,MIDI IN optocoupler Schmitt output 3-16 V,SOP-6,C899473,Extended,0.68,0.33,yes
-J1,1,USB-C male plug SHOU HAN TYPE-C 24P-GTJB 040,To the FM-1; JLCPCB Standard-assembly only; PCB thickness NOT verified,SMD 24P,C3151751,Extended,0.13,0.07,partial (datasheet did not load)
+J1,1,USB-C male plug SHOU HAN TYPE-C 24P-GTJB 040,To the FM-1. Board-edge clamp plug: PCB 0.80 +/-0.05 mm with pads on both faces. JLCPCB Standard-assembly only,SMD 24P,C3151751,Extended,0.13,0.07,verified 2026-10-17 (datasheet p.2)
 J2,1,USB-C female TYPE-C-31-M-12,5 V power in only,SMD 16P,C165948,Extended,0.17,0.10,yes
-J3,1,PJ-320B,MIDI OUT 3.5 mm TRS type A; pole count not confirmed on LCSC page,SMD,C18594,Extended,0.06,0.035,partial
-J4,1,PJ-320B,MIDI IN 3.5 mm TRS type A,SMD,C18594,Extended,0.06,0.035,partial
+J3,1,PJ-320D (USAKRO),MIDI OUT 3.5 mm 4-pole SMD jack: 1 sleeve 2 ring2 3 ring1 4 tip; EasyEDA footprint; Economic assembly,SMD,C521460,Extended,0.11,0.066,verified 2026-10-17 (datasheet + KiCad PJ320D cross-check)
+J4,1,PJ-320D (USAKRO),MIDI IN 3.5 mm 4-pole SMD jack (sleeve pins open),SMD,C521460,Extended,0.11,0.066,verified 2026-10-17
 R1,1,Resistor,56k (Rp on J1 CC: FM-1 sees a host),0603,C23206,Basic,,,verified 2026-10-17
 "R2,R3",2,Resistor,5.1k (Rd on J2 CC1 CC2: charger supplies 5 V),0603,C23186,Basic,,,verified 2026-10-17
 R4,1,Resistor,6.8k (U3 ISET: 1 A limit),0603,C23212,Basic,,,verified 2026-10-17
