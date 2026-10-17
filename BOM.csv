@@ -10,7 +10,6 @@ J4,1,PJ-320D (USAKRO),MIDI IN 3.5 mm 4-pole SMD jack (sleeve pins open),SMD,C521
 R1,1,Resistor,56k (Rp on J1 CC: FM-1 sees a host),0603,C23206,Basic,,,verified 2026-10-17
 "R2,R3",2,Resistor,5.1k (Rd on J2 CC1 CC2: charger supplies 5 V),0603,C23186,Basic,,,verified 2026-10-17
 R4,1,Resistor,6.8k (U3 ISET: 1 A limit),0603,C23212,Basic,,,verified 2026-10-17
-"R5,R6",2,Resistor,15k (USB host D+ D- pull-downs) - confirm against CH32X035 RM whether internal pull-downs exist,0603,C22809,Basic,,,part verified 2026-10-17; need for the pull-downs still to confirm in the RM
 R7,1,Resistor,10 Ω (MIDI OUT tip series),0603,C22859,Basic,,,verified 2026-10-17
 R8,1,Resistor,33 Ω (MIDI OUT ring from 3V3),0603,C23140,Basic,,,verified 2026-10-17
 R9,1,Resistor,220 Ω (MIDI IN LED series inside the loop; MIDI spec 220 Ω at 5 V),0603,C22962,Basic,,,verified 2026-10-17

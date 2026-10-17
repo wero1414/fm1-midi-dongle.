@@ -11,3 +11,5 @@ fp-info-cache
 gerbers/
 __pycache__/
 production/netlist.xml
+production/route/
+production/netlist.xml

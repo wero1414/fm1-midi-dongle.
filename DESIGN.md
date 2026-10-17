@@ -109,21 +109,36 @@ Free for EN / LED: PA0..PA7 (pins 3..11 area), PB0, PB3, PC0, PC3 - pick during 
 Added in the schematic beyond the BOM list: R12 100k pull-down on VBUS_EN (VBUS stays off until firmware
 enables it; SY6280 says EN must not float), C5 100 nF at the optocoupler.
 
-## PCB floorplan (2026-10-17, `tools/gen_pcb.py`)
-Board **18.9 x 26.0 mm, 4 layers, 0.8 mm**, generated with KiCad's pcbnew module from the schematic netlist;
-DRC clean except silkscreen warnings and the unrouted nets. Layers: F.Cu, In1 = GND plane, In2 = power/signals, B.Cu.
+## PCB: floorplan v3 and routing (2026-10-17, `tools/gen_pcb.py`, `tools/cfg_fm1.py`)
+Board **20.0 x 26.0 mm, 4 layers (F.Cu signals / In1 GND plane / In2 +3V3 plane / B.Cu signals + power), 0.8 mm**.
+Placement generated from the netlist with pcbnew, routed with the KAT negotiated-congestion router
+(kicad-pcb-autorouter-workflow skill), GND/3V3 pads tied to the planes with vias. **DRC: 0 errors, 0 unconnected**
+(20 silkscreen warnings from the EasyEDA footprint graphics only). Viewer: `docs/viewer.html` (placed vs routed, per layer).
 
-- **Top edge**: the plug tongue. The board edge is the tongue tip (6.1 mm wide, 0.25 mm corner radius) with the
-  two latch notches (1.4 x 0.9 mm) from the plug drawing; the plug housing hangs off the board. A rule area keeps
-  parts out of the 1.5 mm the plug's rear clamps, on both faces.
-- **Bottom edge**: the two PJ-320D jacks at 9.3 mm pitch, noses 2.1 mm outside the edge. Each jack is 9 mm wide
-  across its pads, which sets the board width.
-- **Top side**: VBUS switch and LDO on the left, CH32X035 on the right in the band between the receptacle's
-  through pins, LED in the middle in front of the jacks.
-- **Bottom side**: the power USB-C receptacle on the right (opening on the right edge, 1 mm overhang), the
-  optocoupler on the left, passives in columns under the jacks between their locating pegs, three LinkE pads.
-- Why not smaller: the receptacle's shield pins come through the board under the right jack unless the jacks
-  sit 16.7 mm down; two TRS plug bodies need the 9.3 mm pitch; the opto's 8.6 x 11 mm pads only fit beside the
-  receptacle. Moving the receptacle to the far end would put its cable plug under the TRS plugs.
-- Views: `docs/pcb_top.png`, `docs/pcb_bot.png` (mirrored), `docs/pcb3d_top.png`, `docs/pcb3d_bot.png`.
-- Next: routing in KiCad (71 unconnected items), then `kicad-cli pcb export pos` for the JLCPCB CPL.
+Placement by signal priority (IPC-2221/2222 practice):
+1. **USB pair**: the CH32X035 sits directly under the plug pads, rotated so pins 27 (D+) and 26 (D-) face A6/A7.
+   Both traces are straight, 1.4 mm, on F.Cu over the unbroken GND plane, no via, 0.15 mm wide. The chip's own
+   pull-downs are used (RB_UH_PD_DIS = 0); the DNP pull-down footprints were dropped because they would have hung
+   8 mm stubs on the pair.
+2. **Power**: the plug's VBUS pads exist on both tongue faces; the board uses the back-face pads B4/B9 only (A4/A9
+   are joined to them inside the plug, and no via fits under the clamp). SY6280 on the back 2.5 mm from those pads,
+   receptacle VBUS 4 mm from its IN pin, 0.25 mm traces, no via. LDO on top beside the MCU VDD pin and C4; 3V3 is
+   the In2 plane, so every 3V3 pad is one via. 5 V crosses once (back to top) for the LDO, CC pull-up and C1.
+3. **Serial**: TX pin 21 -> R7 -> J3 tip on F.Cu, no via. DIO pin 25 escapes to the right to TP2, no via.
+   Isolated MIDI IN chain on the back under the jacks: J4 tip/ring -> 2 vias -> R9/D1 -> H11L1SM -> R10 -> via -> RX pin.
+4. **GND return**: In1 is a full GND plane directly under F.Cu; 36 vias; QFN exposed pad on a 2x2 via array; the
+   plug's A/B-row GND pads tied to the shell pads with short stubs. Vias are tented.
+5. **Mechanics**: jack pitch 10 mm so two moulded TRS plugs fit; jack noses 2.1 mm outside the edge; receptacle
+   cable on the right side (at the far end its plug would collide with the TRS plugs); nothing within 1.5 mm of
+   the plug clamp on either face; EasyEDA courtyards are body-only, so pad-to-pad spacing (>= 0.3 mm) and hole
+   clearances are checked numerically by the generator.
+
+Review tools run (kicad-happy `kicad` + `emc` analyzers): remaining findings are IO-001 "no ESD/EMC parts at the
+connectors" (design choice: add a USBLC6-2SC6 on D+/D-/VBUS in rev B if the dongle will be sold), GP-001 "50 %
+reference coverage" on top-layer nets (the tool counts only GND planes as reference: In2 is 3V3 by design; In1 under
+every top trace is solid), no fiducials (JLCPCB adds panel fiducials; add two 1 mm fiducials if ordering assembly),
+jack/plug courtyards past the edge (intentional).
+
+Outputs: `production/gerbers/` (Gerber X2 + Excellon), `production/cpl_jlcpcb.csv`, `production/bom_jlcpcb.csv`.
+Rebuild: `python3 tools/gen_sch.py && python3 tools/gen_pcb.py`, then the KAT chain (plane_via -> ncroute with
+`tools/cfg_fm1.py` -> `tools/post_route_fix.py`); the router needs its grid ORIGIN set to the board's top-left corner.

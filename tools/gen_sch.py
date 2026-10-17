@@ -138,6 +138,15 @@ SY6280_BLOCK = '''(symbol "fm1_dongle:SY6280AAC" (pin_names (offset 1.016)) (exc
 \t)'''
 
 
+# manufacturer part numbers, from the LCSC product pages (2026-10-17)
+MPN = {'C7437027': 'CH32X035G8U6', 'C5446': 'XC6206P332MR', 'C55136': 'SY6280AAC', 'C899473': 'H11L1SM',
+       'C3151751': 'TYPE-C 24P-GTJB 040', 'C165948': 'TYPE-C-31-M-12', 'C521460': 'PJ-320D',
+       'C22859': '0603WAF100JT5E', 'C23140': '0603WAF330JT5E', 'C22962': '0603WAF2200T5E', 'C21190': '0603WAF1001T5E',
+       'C23186': '0603WAF5101T5E', 'C23212': '0603WAF6801T5E', 'C25804': '0603WAF1002T5E', 'C22809': '0603WAF1502T5E',
+       'C23206': '0603WAF5602T5E', 'C25803': '0603WAF1003T5E', 'C14663': 'CC0603KRX7R9BB104', 'C15849': 'CL10A105KB8NNNC',
+       'C81598': '1N4148W', 'C72043': '19-217/GHC-YR1S2/3T'}
+
+
 # ---------------------------------------------------------------- schematic builder
 _UID_NS = uuid.UUID('6f1d2c3b-4a59-4e87-9c0d-fm1dongle000'.replace('fm1dongle000', '1e2f3a4b5c6d'))
 _uid_n = [0]
@@ -174,6 +183,8 @@ class Sch:
         ]
         if lcsc:
             props.append(('LCSC#', lcsc, x, y, True))
+            if lcsc in MPN:
+                props.append(('MPN', MPN[lcsc], x, y, True))
         for k, v in extra:
             props.append((k, v, x, y, True))
         s = [f'\t(symbol (lib_id "{key}") (at {x:g} {y:g} 0) (unit 1) (exclude_from_sim no) (in_bom {"yes" if in_bom else "no"}) (on_board yes) (dnp {"yes" if dnp else "no"})',
@@ -278,18 +289,16 @@ def main():
             nc=('1', '3', '4', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '23', '24', '28'),
             extra=(('Note', 'QFN28 F7P6/TSSOP20 has NO USB host; G8U6 required. footprint from EasyEDA/LCSC for C7437027 (EP 2.8 mm).'),))
     s.place('Device', 'C', 'C4', '100n', 230, 50, {'1': '+3V3', '2': 'GND'}, footprint=C, lcsc='C14663')
-    s.place('Device', 'R', 'R5', '15k', 230, 100, {'1': 'USB_DM', '2': 'GND'}, footprint=R, lcsc='C22809', dnp=True,
-            extra=(('Note', 'DNP: the X035 host port has internal pull-downs (RB_UH_PD_DIS = 0, RM USBFS host chapter)'),))
-    s.place('Device', 'R', 'R6', '15k', 240, 100, {'1': 'USB_DP', '2': 'GND'}, footprint=R, lcsc='C22809', dnp=True)
+    # no D+/D- pull-downs: the X035 host port has them internally (RB_UH_PD_DIS = 0); stubs on a USB pair are worse than nothing
 
     # ---- J1 male plug to the FM-1 (dongle is the host / DFP)
     s.place('fm1_dongle', 'USB-C_Plug_GTJB040', 'J1', 'TYPE-C 24P-GTJB 040', 280, 90,
-            {'A4': 'VBUS_FM1', 'A9': 'VBUS_FM1', 'B4': 'VBUS_FM1', 'B9': 'VBUS_FM1',
+            {'B4': 'VBUS_FM1', 'B9': 'VBUS_FM1',
              'A1': 'GND', 'A12': 'GND', 'B1': 'GND', 'B12': 'GND', '25': 'GND', '26': 'GND',
              'A5': 'CC_FM1', 'A6': 'USB_DP', 'A7': 'USB_DM'},
             footprint='fm1_dongle:USB-C-SMD_TYPE-C-24P-GTJB-040', lcsc='C3151751',
-            nc=('A2', 'A3', 'A8', 'A10', 'A11', 'B2', 'B3', 'B5', 'B6', 'B7', 'B8', 'B10', 'B11'),
-            extra=(('Note', 'SHOU HAN TYPE-C 24P-GTJB 040, board-edge clamp plug: PCB 0.80 +/-0.05 mm, pads on both faces (datasheet p.2); JLCPCB Standard assembly only'),))
+            nc=('A2', 'A3', 'A4', 'A8', 'A9', 'A10', 'A11', 'B2', 'B3', 'B5', 'B6', 'B7', 'B8', 'B10', 'B11'),
+            extra=(('Note', 'SHOU HAN TYPE-C 24P-GTJB 040, board-edge clamp plug: PCB 0.80 +/-0.05 mm, pads on both faces (datasheet p.2); JLCPCB Standard assembly only. VBUS taken on the back-face pads B4/B9 only (A4/A9 joined inside the plug; no via fits under the clamp)'),))
     s.place('Device', 'R', 'R1', '56k', 310, 60, {'1': '+5V_IN', '2': 'CC_FM1'}, footprint=R, lcsc='C23206',
             extra=(('Note', 'Rp: the FM-1 sees a default-USB host'),))
 
@@ -334,7 +343,7 @@ def main():
 
     s.text('FM-1 MIDI dongle, rev A (netlist-first drawing: every connection is a net label; tidy before layout).\n'
            'JLCPCB build: PCB 0.8 mm (the plug clamps the board edge), all parts top side SMD, footprints from EasyEDA/LCSC.\n'
-           'R5/R6 are DNP: the X035 host port has internal D+/D- pull-downs (RB_UH_PD_DIS = 0).\n'
+           'No D+/D- pull-downs: the X035 host port has them internally (RB_UH_PD_DIS = 0).\n'
            'TRS type A: tip = MIDI pin 5 (data), ring = pin 4 (source), sleeve = pin 2.', 150, 185)
 
     s.write(HERE / f'{PROJECT}.kicad_sch')

@@ -48,34 +48,32 @@ PLACE = {
     'U2': (-5.2, 3.6, AUTO, T),      # XC6206: VO toward C4 / pin 2, VI toward the 5 V via on the left
     'C1': (-8.0, 3.2, 90, T),        # 5 V 1 µF at the LDO input
     'C2': (-5.0, 6.0, 0, T),         # 3V3 1 µF at the LDO output
-    'R1': (-8.0, 0.6, 0, T),         # CC Rp 56k (A5 is top-face only)
-    'R5': (8.4, 4.4, 90, T),         # D- pull-down, DNP
-    'R6': (8.4, 7.6, 90, T),         # D+ pull-down, DNP
+    'R1': (-7.6, 0.9, 0, T),         # CC Rp 56k (A5 is top-face only)
     'R7': (3.9, 7.8, 90, T),         # MIDI OUT tip 10 Ω: TX pin -> R7 -> J3 tip, all on top
     'R8': (5.4, 10.2, 90, T),        # MIDI OUT ring 33 Ω from 3V3
     'R11': (-3.2, 7.8, 0, T),        # LED 1k
     'D2': (-3.2, 9.8, 0, T),         # LED
-    'TP1': (-8.4, 6.2, 0, T),        # 3V3
-    'TP2': (-8.4, 8.9, 0, T),        # DIO
+    'TP1': (8.2, 5.2, 0, T),         # 3V3
+    'TP2': (8.2, 7.9, 0, T),         # DIO: pin 25 escapes to the right, no via
     'TP3': (0.6, 8.8, 0, T),         # GND, top centre
     # ---- back
-    'U3': (-0.6, 3.6, AUTO, B),      # SY6280: OUT to the plug's back-face VBUS pad, IN to the receptacle VBUS
-    'C3': (-3.4, 3.4, 90, B),        # VBUS_FM1 1 µF
-    'R4': (-3.4, 6.6, 90, B),        # ISET 6.8k
-    'R12': (-5.6, 3.4, 90, B),       # EN pull-down 100k
+    'U3': (-1.8, 3.6, AUTO, B),      # SY6280: OUT to the plug's back-face VBUS pad, IN to the receptacle VBUS
+    'C3': (-4.2, 3.4, 90, B),        # VBUS_FM1 1 µF
+    'R4': (-3.4, 7.2, 90, B),        # ISET 6.8k
+    'R12': (-6.2, 3.4, 90, B),       # EN pull-down 100k
     'R2': (-1.0, 7.6, 90, B),        # CC1 5.1k next to the receptacle CC pads
     'R3': (-1.0, 10.8, 90, B),       # CC2 5.1k
     'U4': (0.0, 18.0, AUTO, B),      # H11L1SM under the jacks, LED pins toward the MIDI IN jack
-    'R9': (-7.6, 15.0, 90, B),       # MIDI IN 220 Ω
-    'D1': (-7.6, 19.0, 90, B),       # 1N4148W
+    'R9': (-7.6, 14.4, 90, B),       # MIDI IN 220 Ω
+    'D1': (-7.6, 18.3, 90, B),       # 1N4148W
     'R10': (7.0, 14.0, 90, B),       # MIDI_RX pull-up 10k
-    'C5': (7.0, 17.0, 90, B),        # opto VCC 100 nF
+    'C5': (-7.6, 22.4, 90, B),       # opto VCC 100 nF, next to U4 pin 6
 }
-DNP = {'R5', 'R6'}
+DNP = set()
 # pad -> target point (board mm); the rotation minimising the summed distances wins
 GOALS = {
     'U1': {'27': (-0.25, -0.03), '26': (0.25, -0.03)},            # D+ (A6) left, D- (A7) right after J1 rot 180
-    'U3': {'1': (1.25, -0.03), '5': (2.8, 4.8)},                  # OUT -> B4 VBUS pad, IN -> receptacle VBUS
+    'U3': {'1': (-1.25, -0.03), '5': (2.8, 4.8)},                  # OUT -> B4 VBUS pad, IN -> receptacle VBUS
     'U2': {'2': (-2.6, 3.0), '3': (-8.0, 3.2)},                   # VO -> C4, VI -> C1 / 5 V via
     'U4': {'1': (-8.0, 13.75), '2': (-8.0, 17.75), '4': (2.6, 3.4)},  # LED pins toward J4's tip/ring, output up
 }
@@ -145,12 +143,14 @@ def main():
     b = pcbnew.BOARD()
     b.SetCopperLayerCount(4)
     b.SetLayerName(pcbnew.In1_Cu, 'GND1')
-    b.SetLayerName(pcbnew.In2_Cu, 'GND2')
+    b.SetLayerName(pcbnew.In2_Cu, 'PWR')
     ds = b.GetDesignSettings()
     ds.m_MinClearance = FromMM(0.127); ds.m_TrackMinWidth = FromMM(0.127)
     ds.m_ViasMinSize = FromMM(0.45); ds.m_MinThroughDrill = FromMM(0.20)
     ds.m_CopperEdgeClearance = FromMM(0.3); ds.m_HoleClearance = FromMM(HOLE_CLEAR)
     ds.SetBoardThickness(FromMM(0.8))
+    for attr in ('m_TentViasFront', 'm_TentViasBack'):
+        if hasattr(ds, attr): setattr(ds, attr, True)      # mask over vias: several sit at pad edges (plane_via)
     nc = ds.m_NetSettings.GetDefaultNetclass()
     nc.SetClearance(FromMM(0.15)); nc.SetTrackWidth(FromMM(0.2))
     nc.SetViaDiameter(FromMM(0.45)); nc.SetViaDrill(FromMM(0.2))
@@ -227,9 +227,9 @@ def main():
     arc(-hw + r, Y_BOT, -hw + r * (1 - 0.7071), Y_BOT - r * (1 - 0.7071), -hw, Y_BOT - r)
     seg(-hw, Y_BOT - r, -hw, Y_TOP)
 
-    # ---- two inner GND planes: every outer-layer trace sees an adjacent solid reference
-    for layer, name in ((pcbnew.In1_Cu, 'GND plane 1'), (pcbnew.In2_Cu, 'GND plane 2')):
-        z = pcbnew.ZONE(b); z.SetLayer(layer); z.SetNet(netitems['GND']); z.SetZoneName(name)
+    # ---- inner planes: In1 = GND under the top-side USB pair and MCU, In2 = +3V3 (every 3V3 pad is one via)
+    for layer, name, net in ((pcbnew.In1_Cu, 'GND plane', 'GND'), (pcbnew.In2_Cu, '3V3 plane', '+3V3')):
+        z = pcbnew.ZONE(b); z.SetLayer(layer); z.SetNet(netitems[net]); z.SetZoneName(name)
         ol = z.Outline(); ol.NewOutline()
         for x, y in [(-hw, Y_TOP), (hw, Y_TOP), (hw, Y_BOT), (-hw, Y_BOT)]:
             ol.Append(MM(x, y))
@@ -243,9 +243,20 @@ def main():
             if hasattr(kz, setter): getattr(kz, setter)(False)
         kz.SetLayer(layer); kz.SetZoneName('plug clamp, no parts')
         o = kz.Outline(); o.NewOutline()
-        for x, y in [(-5.0, -0.8), (5.0, -0.8), (5.0, 1.5), (-5.0, 1.5)]:
+        for x, y in [(-5.0, 0.85), (5.0, 0.85), (5.0, 1.5), (-5.0, 1.5)]:
             o.Append(MM(x, y))
         b.Add(kz)
+
+    # ---- QFN exposed pad: 2 x 2 via array into the GND planes (locked, so rip scripts keep them)
+    ep = fps['U1']
+    for p in ep.Pads():
+        if p.GetNumber() == '29':
+            cx, cy = ToMM(p.GetPosition().x), ToMM(p.GetPosition().y)
+            for dx in (-0.7, 0.7):
+                for dy in (-0.7, 0.7):
+                    v = pcbnew.PCB_VIA(b); v.SetPosition(MM(cx + dx, cy + dy))
+                    v.SetWidth(FromMM(0.45)); v.SetDrill(FromMM(0.20)); v.SetNet(netitems['GND'])
+                    v.SetLayerPair(pcbnew.F_Cu, pcbnew.B_Cu); v.SetLocked(True); b.Add(v)
 
     out = HERE / f'{PROJECT}.kicad_pcb'
     b.Save(str(out))
