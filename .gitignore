@@ -10,3 +10,4 @@ fp-info-cache
 *.zip
 gerbers/
 __pycache__/
+production/netlist.xml

@@ -139,8 +139,12 @@ SY6280_BLOCK = '''(symbol "fm1_dongle:SY6280AAC" (pin_names (offset 1.016)) (exc
 
 
 # ---------------------------------------------------------------- schematic builder
+_UID_NS = uuid.UUID('6f1d2c3b-4a59-4e87-9c0d-fm1dongle000'.replace('fm1dongle000', '1e2f3a4b5c6d'))
+_uid_n = [0]
 def uid():
-    return str(uuid.uuid4())
+    """deterministic: same schematic -> same uuids, so the PCB's symbol links survive a regeneration"""
+    _uid_n[0] += 1
+    return str(uuid.uuid5(_UID_NS, str(_uid_n[0])))
 
 
 class Sch:
@@ -156,7 +160,7 @@ class Sch:
             self.libs[key], self.pins[key] = load_symbol(lib, name)
         return key
 
-    def place(self, lib, name, ref, value, x, y, nets, footprint='', lcsc='', nc=(), hidden_value=False, extra=(), in_bom=True):
+    def place(self, lib, name, ref, value, x, y, nets, footprint='', lcsc='', nc=(), hidden_value=False, extra=(), in_bom=True, dnp=False):
         """nets: {pin_number: netname}; nc: pin numbers that get a no-connect flag.
         Pins listed in neither are left for the caller to connect by position (not used here)."""
         key = self.use(lib, name)
@@ -172,7 +176,7 @@ class Sch:
             props.append(('LCSC#', lcsc, x, y, True))
         for k, v in extra:
             props.append((k, v, x, y, True))
-        s = [f'\t(symbol (lib_id "{key}") (at {x:g} {y:g} 0) (unit 1) (exclude_from_sim no) (in_bom {"yes" if in_bom else "no"}) (on_board yes) (dnp no)',
+        s = [f'\t(symbol (lib_id "{key}") (at {x:g} {y:g} 0) (unit 1) (exclude_from_sim no) (in_bom {"yes" if in_bom else "no"}) (on_board yes) (dnp {"yes" if dnp else "no"})',
              f'\t\t(uuid "{uid()}")']
         for k, v, px, py, hide in props:
             h = ' (hide yes)' if hide else ''
@@ -274,9 +278,9 @@ def main():
             nc=('1', '3', '4', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '23', '24', '28'),
             extra=(('Note', 'QFN28 F7P6/TSSOP20 has NO USB host; G8U6 required. footprint from EasyEDA/LCSC for C7437027 (EP 2.8 mm).'),))
     s.place('Device', 'C', 'C4', '100n', 230, 50, {'1': '+3V3', '2': 'GND'}, footprint=C, lcsc='C14663')
-    s.place('Device', 'R', 'R5', '15k', 230, 100, {'1': 'USB_DM', '2': 'GND'}, footprint=R, lcsc='C22809',
-            extra=(('Note', 'host-side pull-down; drop if the X035 host port has internal ones (RM check)'),))
-    s.place('Device', 'R', 'R6', '15k', 240, 100, {'1': 'USB_DP', '2': 'GND'}, footprint=R, lcsc='C22809')
+    s.place('Device', 'R', 'R5', '15k', 230, 100, {'1': 'USB_DM', '2': 'GND'}, footprint=R, lcsc='C22809', dnp=True,
+            extra=(('Note', 'DNP: the X035 host port has internal pull-downs (RB_UH_PD_DIS = 0, RM USBFS host chapter)'),))
+    s.place('Device', 'R', 'R6', '15k', 240, 100, {'1': 'USB_DP', '2': 'GND'}, footprint=R, lcsc='C22809', dnp=True)
 
     # ---- J1 male plug to the FM-1 (dongle is the host / DFP)
     s.place('fm1_dongle', 'USB-C_Plug_GTJB040', 'J1', 'TYPE-C 24P-GTJB 040', 280, 90,
@@ -330,7 +334,7 @@ def main():
 
     s.text('FM-1 MIDI dongle, rev A (netlist-first drawing: every connection is a net label; tidy before layout).\n'
            'JLCPCB build: PCB 0.8 mm (the plug clamps the board edge), all parts top side SMD, footprints from EasyEDA/LCSC.\n'
-           'Open item: whether the X035 host port has internal D+/D- pull-downs (R5/R6).\n'
+           'R5/R6 are DNP: the X035 host port has internal D+/D- pull-downs (RB_UH_PD_DIS = 0).\n'
            'TRS type A: tip = MIDI pin 5 (data), ring = pin 4 (source), sleeve = pin 2.', 150, 185)
 
     s.write(HERE / f'{PROJECT}.kicad_sch')

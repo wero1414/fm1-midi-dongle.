@@ -51,8 +51,8 @@ Free for EN / LED: PA0..PA7 (pins 3..11 area), PB0, PB3, PC0, PC3 - pick during 
 ## Open items (must be checked before ordering)
 1. (closed) J1: datasheet read, PCB 0.80 mm, footprint from EasyEDA.
 2. (closed) jack: PJ-320D C521460, 4-pole, pin map verified.
-3. Whether the X035 USB host port has internal D+/D- pull-downs (reference manual, USBFS host chapter).
-   If yes, drop R5/R6.
+3. (closed) The X035 host port has internal D+/D- pull-downs: R8_UHOST_CTRL bit 7 RB_UH_PD_DIS, 0 = enabled
+   (reset value 1). R5/R6 stay as DNP footprints; firmware clears the bit.
 4. USB PHY supply: datasheet gives VDD 2.0-5.5 V and no separate PHY rail was found. Design runs the chip
    at 3.3 V; confirm in the RM that USB host works at 3.3 V VDD (device examples run at 3.3 V).
 5. Does the stock/Melodee FM-1 attach as a plain full-speed device? (JieLi USB is HS-capable; a HS device
@@ -108,3 +108,22 @@ Free for EN / LED: PA0..PA7 (pins 3..11 area), PB0, PB3, PC0, PC3 - pick during 
 
 Added in the schematic beyond the BOM list: R12 100k pull-down on VBUS_EN (VBUS stays off until firmware
 enables it; SY6280 says EN must not float), C5 100 nF at the optocoupler.
+
+## PCB floorplan (2026-10-17, `tools/gen_pcb.py`)
+Board **18.9 x 26.0 mm, 4 layers, 0.8 mm**, generated with KiCad's pcbnew module from the schematic netlist;
+DRC clean except silkscreen warnings and the unrouted nets. Layers: F.Cu, In1 = GND plane, In2 = power/signals, B.Cu.
+
+- **Top edge**: the plug tongue. The board edge is the tongue tip (6.1 mm wide, 0.25 mm corner radius) with the
+  two latch notches (1.4 x 0.9 mm) from the plug drawing; the plug housing hangs off the board. A rule area keeps
+  parts out of the 1.5 mm the plug's rear clamps, on both faces.
+- **Bottom edge**: the two PJ-320D jacks at 9.3 mm pitch, noses 2.1 mm outside the edge. Each jack is 9 mm wide
+  across its pads, which sets the board width.
+- **Top side**: VBUS switch and LDO on the left, CH32X035 on the right in the band between the receptacle's
+  through pins, LED in the middle in front of the jacks.
+- **Bottom side**: the power USB-C receptacle on the right (opening on the right edge, 1 mm overhang), the
+  optocoupler on the left, passives in columns under the jacks between their locating pegs, three LinkE pads.
+- Why not smaller: the receptacle's shield pins come through the board under the right jack unless the jacks
+  sit 16.7 mm down; two TRS plug bodies need the 9.3 mm pitch; the opto's 8.6 x 11 mm pads only fit beside the
+  receptacle. Moving the receptacle to the far end would put its cable plug under the TRS plugs.
+- Views: `docs/pcb_top.png`, `docs/pcb_bot.png` (mirrored), `docs/pcb3d_top.png`, `docs/pcb3d_bot.png`.
+- Next: routing in KiCad (71 unconnected items), then `kicad-cli pcb export pos` for the JLCPCB CPL.
