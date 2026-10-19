@@ -293,12 +293,12 @@ def main():
 
     # ---- J1 male plug to the FM-1 (dongle is the host / DFP)
     s.place('fm1_dongle', 'USB-C_Plug_GTJB040', 'J1', 'TYPE-C 24P-GTJB 040', 280, 90,
-            {'B4': 'VBUS_FM1', 'B9': 'VBUS_FM1',
+            {'A4': 'VBUS_FM1', 'B4': 'VBUS_FM1', 'B9': 'VBUS_FM1',
              'A1': 'GND', 'A12': 'GND', 'B1': 'GND', 'B12': 'GND', '25': 'GND', '26': 'GND',
              'A5': 'CC_FM1', 'A6': 'USB_DP', 'A7': 'USB_DM'},
             footprint='fm1_dongle:USB-C-SMD_TYPE-C-24P-GTJB-040', lcsc='C3151751',
-            nc=('A2', 'A3', 'A4', 'A8', 'A9', 'A10', 'A11', 'B2', 'B3', 'B5', 'B6', 'B7', 'B8', 'B10', 'B11'),
-            extra=(('Note', 'SHOU HAN TYPE-C 24P-GTJB 040, board-edge clamp plug: PCB 0.80 +/-0.05 mm, pads on both faces (datasheet p.2); JLCPCB Standard assembly only. VBUS taken on the back-face pads B4/B9 only (A4/A9 joined inside the plug; no via fits under the clamp)'),))
+            nc=('A2', 'A3', 'A8', 'A9', 'A10', 'A11', 'B2', 'B3', 'B5', 'B6', 'B7', 'B8', 'B10', 'B11'),
+            extra=(('Note', 'SHOU HAN TYPE-C 24P-GTJB 040, board-edge clamp plug: PCB 0.80 +/-0.05 mm, pads on both faces (datasheet p.2); JLCPCB Standard assembly only. VBUS on A4 (top) + B4/B9 (back, joined to A4 by a via): 3 of 4 contacts, ~0.33 A each at the 1 A limit. A9 is NC: it sits right of the USB pair and the DIO/RX traces pass under it'),))
     s.place('Device', 'R', 'R1', '56k', 310, 60, {'1': '+5V_IN', '2': 'CC_FM1'}, footprint=R, lcsc='C23206',
             extra=(('Note', 'Rp: the FM-1 sees a default-USB host'),))
 

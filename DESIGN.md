@@ -81,7 +81,7 @@ Free for EN / LED: PA0..PA7 (pins 3..11 area), PB0, PB3, PC0, PC3 - pick during 
   stop using the generator.
 
 ## Built for JLCPCB assembly (2026-10-17)
-- PCB: 2 layers, **0.8 mm** (the USB-C plug clamps the board edge; its datasheet says T = 0.80 +/- 0.05 mm),
+- PCB: 4 layers (see floorplan), **0.8 mm** (the USB-C plug clamps the board edge; its datasheet says T = 0.80 +/- 0.05 mm),
   all parts SMD on the top side. JLCPCB Economic PCBA accepts 0.8 mm boards; the plug itself is "Standard
   assembly only" in JLCPCB's library, so a JLCPCB-assembled run is Standard. First five are hand assembled.
 - Footprints for every IC and connector come from EasyEDA/LCSC for the exact LCSC number (easyeda2kicad),
@@ -109,24 +109,78 @@ Free for EN / LED: PA0..PA7 (pins 3..11 area), PB0, PB3, PC0, PC3 - pick during 
 Added in the schematic beyond the BOM list: R12 100k pull-down on VBUS_EN (VBUS stays off until firmware
 enables it; SY6280 says EN must not float), C5 100 nF at the optocoupler.
 
-## PCB floorplan v3 (2026-10-17, `tools/gen_pcb.py`) - placement only, routing is the owner's
-Board 20.0 x 26.0 mm, 4 layers (F.Cu / In1 GND plane / In2 +3V3 plane / B.Cu), 0.8 mm. Placement generated from
-the netlist with pcbnew; GND and 3V3 planes drawn; QFN exposed pad has a 2x2 GND via array. DRC: placement clean
-(only silkscreen warnings from the EasyEDA footprint graphics). Not routed.
+## PCB floorplan v4 (2026-10-18, `tools/gen_pcb.py`) - single-sided, placement only, routing is the owner's
+v3 had 11 parts on the back (two reflow passes, the receptacle made the stick rock, its shell slots perforated the
+GND plane beside the MCU and USB pair, MIDI_RX ran 22 mm across the board). v4 puts every part on the top face.
+Board 20.0 x 37.7 mm (was 26), 4 layers (F.Cu parts / In1 GND plane / In2 +3V3 plane / B.Cu free routing), 0.8 mm.
+Not routed. Self-check (pads, bodies, courtyards, holes, edge): 0 issues. DRC: no courtyard or clearance errors;
+only silk clipped where J2 and the jack noses overhang the edge (by design), the unrouted ratsnest, and the 3V3
+plane reported isolated until it gets its vias.
 
-Placement by signal priority:
-1. USB pair: the CH32X035 sits directly under the plug pads, rotated so pins 27 (D+) and 26 (D-) face A6/A7, 1.4 mm
-   straight on F.Cu over the GND plane. The chip's own pull-downs are used (RB_UH_PD_DIS = 0); the DNP pull-down
-   footprints were removed (they would hang stubs on the pair).
-2. Power: the plug's VBUS pads exist on both tongue faces; the board uses the back-face pads B4/B9 (A4/A9 are joined
-   inside the plug; no via fits under the clamp). SY6280 on the back 2.5 mm from them, receptacle VBUS 4 mm from
-   its IN pin. LDO on top beside the MCU VDD pin and C4; 3V3 is the In2 plane.
-3. Serial: TX pin 21 next to R7 and the right jack's tip pad; DIO pin 25 on the right toward TP2; isolated MIDI IN
-   chain on the back under the jacks next to the left jack.
-4. GND: In1 solid under F.Cu; plug ground pads next to the shell pads; EP via array.
-5. Mechanics: 10 mm jack pitch (two moulded TRS plugs), jack noses 2.1 mm outside the edge, receptacle cable on
-   the right side, nothing within 1.5 mm of the plug clamp on either face. EasyEDA courtyards are body-only, so the
-   generator checks pad-to-pad spacing (>= 0.3 mm) and hole clearances numerically.
+The MCU's pins decide the halves: VDD 2 / VBUS_EN 5 / LED 6 face left, TX 21 / RX 22 / DIO 25 face right and up.
+1. USB pair: unchanged, CH32X035 directly under the plug, pins 27/26 face A6/A7, 2.6 mm straight on F.Cu over In1.
+   Nothing with a hole within 6 mm of it.
+2. Power (left): SY6280 beside the plug's top-face VBUS pad A4 (schematic now ties A4/A9/B4/B9 all to VBUS_FM1),
+   C3 and the CC Rp R1 in the free corner left of the tongue, LDO + C1/C2 below, C4 vertical against pin 2,
+   J2 below them with its mouth on the LEFT edge and R2/R3 beside its CC pads.
+3. MIDI (right): LinkE pads TP2 (DIO) and TP1 (3V3) in the free corner right of the tongue, TP3 (GND) beside the
+   MCU; opto above the MIDI IN jack, pin 4 up toward the MCU with R10 above it, C5 above pins 5/6; R9 and D1
+   between the opto's LED pins and the jack's tip pad.
+4. Jacks swapped: MIDI IN is now the right jack (J4) because its tip/ring pads sit at the board centre under the
+   opto; MIDI OUT (J3) is left with R7/R8 right above its tip/ring pads at the edge.
+5. Two-pin parts are turned so each signal pad faces the pads it connects to (GND/3V3 pads face away, toward
+   their plane via); the generator does this for every R/C/D and prints which ones it flipped.
+6. Mechanics: 10 mm jack pitch, jack noses 2.1 mm out, J2 1 mm out on the left edge, nothing in the plug clamp
+   zone, back face flat (only the plug's B-row pads, shell/jack pegs and the EP vias).
 
-Review tools available (installed skills): kicad-happy `kicad` and `emc` analyzers, and the KAT routing toolkit if
-wanted later. Open points for rev B: ESD array at the connectors, two fiducials if JLCPCB assembles.
+Ratsnest (minimum spanning tree per net, v4 vs v3): every net single-sided now (v3: 8 nets crossed sides).
+USB 2.6 / 2.6 mm (same); MIDI_RX 12.7 (was 22.3); OPTO_A 4.4 (11.4); CC1/CC2 2.2 (4.7); ISET 2.8 (6.1);
+SDI_DIO 6.3 (9.3); MIDI_TIP_OUT 3.3 (7.0). Trade-off: MIDI_TX 22 mm (was 5.4), pin 21 to R7 at the jack - chosen
+so the jack-side stub after the series resistor is short; at 31.25 kbaud the long run is harmless, and it can go
+on B.Cu over the GND plane.
+
+Open points for rev B: ESD array at the connectors, two fiducials if JLCPCB assembles, the QFN EP via-in-pad
+(0.2 mm, plug/tent or move them out to avoid solder wicking).
+
+## Routing v4 (2026-10-18, `tools/route.py`, owner asked for it)
+Run: `python3 tools/gen_pcb.py && python3 tools/route.py` (route.py refuses an already-routed board: deleting tracks
+through KiCad 10's Python bindings segfaults). Rules from the pcb-house-rules skill + `house_rules.yaml` override.
+- Every track is an explicit polyline: orthogonal runs, every bend a short 45 deg (longest 1.41 mm), no 90 deg corners,
+  no any-angle. `check_routing.py`: 86 % orthogonal / 14 % 45 deg by length.
+- No loops: `tools/check_loops.py` counts edges - nodes + groups per net over tracks/vias/pads: 0 on every net.
+- Widths 0.2 signal, 0.3 power next to fine-pitch pads, 0.5 power. Vias 0.6/0.3 signal + GND stitching, 0.8/0.4 power.
+- In1 GND plane, In2 +3V3 plane, GND pours on F.Cu and B.Cu, +5V_IN as a B.Cu pour on the power side.
+- Three nets use B.Cu: MIDI_TX (pin 21 to R7 at the jack), CC_FM1 (A5 is boxed in by A4's VBUS stub), VBUS_EN
+  (U3's IN pin sits between pin 5 and U3's EN pin).
+- VBUS_FM1 reaches the plug on A4 (top) and B4/B9 (back, one 0.8/0.4 via + a B.Cu link). A9 is NC: it sits right
+  of the USB pair and DIO/RX must pass under it. 3 of 4 contacts, ~0.33 A each at the 1 A limit.
+- DRC: 0 unconnected, 0 clearance errors. Accepted: 6 copper-to-edge on the plug's own GND pads beside the tongue
+  notches (the plug drawing), 1 width warning (+3V3 0.2 mm out of QFN pin 2: a 0.3 mm track cannot leave a 0.4 mm
+  pitch pin with clearance). 24 text-height warnings: designators at 0.8 mm (owner's choice, see Silkscreen).
+- Review renders: `docs/pcb_route.png` (tools/render_route.py), `docs/pcb_nets.png` (ratsnest, placement).
+
+## Outline, case mounting, silkscreen, 3D (2026-10-18)
+Full pipeline: `python3 tools/gen_pcb.py && python3 ~/.claude/skills/pcb-house-rules/scripts/apply_rules.py
+fm1-midi-dongle.kicad_pro --layers 4 && python3 tools/route.py && python3 tools/silk.py`.
+- Outline: no sharp convex corners. Far corners r 1.0, top corners r 0.75 (TP1's pad keeps 0.5 mm to the edge),
+  plug shoulders and tongue tip r 0.25. The tongue notches' inner corners are left to the router bit.
+- Case mounting (owner chose captured, no screws): the board drops into a pocket in the case bottom and the lid
+  clamps it (ribs on the jack tops). Unplug load: the top shoulders (y = -1.97, x = +/-4.45 .. +/-10) bear on the
+  case's front wall. Plug-in load: the jack fronts (y = 35.7) bear on the back wall. Two half-moon locating notches,
+  r 0.6 with 0.3 mm fillets, on both side edges at y = 22.2 (case pins d ~1.1 printed); that band between J2/D1
+  and the jacks is the only one free on both edges, and R7's pad keeps 0.5 mm to the left notch. Back face is flat
+  (only the plug's B-row pads). Openings needed in the case: plug (front), J2 mouth (left, 1 mm overhang), jack
+  noses (back, 2.1 mm out).
+- Silkscreen (`tools/silk.py`): the library silk is replaced by one style: body outlines (EasyEDA courtyard = body,
+  KiCad F.Fab) clipped 0.2 mm from mask openings and holes and 0.3 mm inside the edge, pin-1 dots on U1-U4,
+  cathode brackets on D1/D2, no outline on R/C. Designators 0.8 x 0.8 mm, 0.15 stroke (owner's choice; JLC's
+  standard legend minimum is 1.0 mm, 0.8 only on their high-precision legend), placed most-constrained first, at
+  least 0.15 mm from pads, never closer to another part than to their own: 21 of 25 fit, R7, R11, U2 stay on
+  F.Fab (assembly drawing). Test pads labelled 3V3 / DIO / GND. Back: board name, revision, MIDI OUT / MIDI IN
+  under the jacks, TRS type A, 5V IN at J2. Old silk is stripped from the file text, since removing it through
+  the SWIG API corrupts the heap.
+- 3D: the plug's EasyEDA WRL had every material at transparency 1.0 (invisible); set to 0. J2's EasyEDA model
+  offset fixed to -0.80 mm (its shell legs now sit in the footprint's SH holes; it was 2.2 mm off). The KiCad 3D
+  library is not installed, so the R/C/LED 0603 and SOD-123 STEP models are vendored in `fm1_dongle.3dshapes`
+  (KiCad 3D library, CC-BY-SA 4.0) and gen_pcb.py points those footprints at them.
+- Renders: `docs/pcb3d_{top,bot,iso}.png`, `docs/silk_{top,bot}.png`.

@@ -1,0 +1,19 @@
+# Project override for the FM-1 MIDI dongle (merged over the skill's house_rules.yaml).
+# The board is 0.8 mm 4-layer (the USB-C plug clamps a 0.8 mm edge); the house impedance table has no 0.8 mm
+# stackup, and the USB pair is a 2.6 mm full-speed (12 Mbps) run, so it gets a plain 0.2 mm width, no target.
+netclasses:
+  - name: Power
+    patterns: ["/VBUS_FM1", "+*"]
+    track: 0.5
+    via: [0.8, 0.4]
+    clearance: 0.2
+  - name: GND
+    patterns: ["GND", "*GND*"]
+    track: 0.5
+    via: [0.8, 0.4]
+    clearance: 0.2
+  - name: USB
+    patterns: ["*USB_DP*", "*USB_DM*"]
+    track: 0.2
+    via: [0.6, 0.3]
+    clearance: 0.2

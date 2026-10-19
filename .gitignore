@@ -13,3 +13,4 @@ __pycache__/
 production/netlist.xml
 production/route/
 production/netlist.xml
+~*.lck
