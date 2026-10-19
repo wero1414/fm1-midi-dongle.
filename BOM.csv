@@ -16,7 +16,7 @@ R9,1,Resistor,220 Ω (MIDI IN LED series inside the loop; MIDI spec 220 Ω at 5 
 R10,1,Resistor,10k (U4 output pull-up to 3V3),0603,C25804,Basic,,,verified 2026-10-17
 R11,1,Resistor,1k (status LED),0603,C21190,Basic,,,verified 2026-10-17
 D1,1,Diode,1N4148W (reverse protection across U4 LED),SOD-123,C81598,Basic,,,verified 2026-10-17
-D2,1,LED,status,0603,C72043,Basic,,,verified 2026-10-17
+D2,1,LED red,status,0603,C2286,Basic,,,2026-10-18: C72043 (green) out of stock; owner chose Basic red KT-0603R, Vf 1.8-2.4 V, ~1.3 mA via R11 1k (JLC DB)
 "C4,C5",2,Capacitor,100 nF 50 V X7R (U1 VDD / U4 VCC),0603,C14663,Basic,,,verified 2026-10-17
 "C1,C2,C3",3,Capacitor,1 µF 50 V X5R (LDO in / LDO out / U3 out),0603,C15849,Basic,,,verified 2026-10-17 (page showed out of stock; re-check)
 R12,1,Resistor,100k (U3 EN pull-down: VBUS off until firmware enables),0603,C25803,Basic,,,verified 2026-10-17

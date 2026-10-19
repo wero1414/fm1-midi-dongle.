@@ -144,7 +144,7 @@ MPN = {'C7437027': 'CH32X035G8U6', 'C5446': 'XC6206P332MR', 'C55136': 'SY6280AAC
        'C22859': '0603WAF100JT5E', 'C23140': '0603WAF330JT5E', 'C22962': '0603WAF2200T5E', 'C21190': '0603WAF1001T5E',
        'C23186': '0603WAF5101T5E', 'C23212': '0603WAF6801T5E', 'C25804': '0603WAF1002T5E', 'C22809': '0603WAF1502T5E',
        'C23206': '0603WAF5602T5E', 'C25803': '0603WAF1003T5E', 'C14663': 'CC0603KRX7R9BB104', 'C15849': 'CL10A105KB8NNNC',
-       'C81598': '1N4148W', 'C72043': '19-217/GHC-YR1S2/3T'}
+       'C81598': '1N4148W', 'C2286': 'KT-0603R'}
 
 
 # ---------------------------------------------------------------- schematic builder
@@ -327,7 +327,7 @@ def main():
 
     # ---- status LED + SDI header
     s.place('Device', 'R', 'R11', '1k', 250, 150, {'1': 'LED', '2': 'LED_K'}, footprint=R, lcsc='C21190')
-    s.place('Device', 'LED', 'D2', 'LED green 0603', 265, 160, {'2': 'LED_K', '1': 'GND'}, footprint='LED_SMD:LED_0603_1608Metric', lcsc='C72043')
+    s.place('Device', 'LED', 'D2', 'LED red 0603', 265, 160, {'2': 'LED_K', '1': 'GND'}, footprint='LED_SMD:LED_0603_1608Metric', lcsc='C2286')
     # programming: three bare pads for the WCH-LinkE wires (no connector on a board this small)
     for ref, net, x in (('TP1', '+3V3', 285), ('TP2', 'SDI_DIO', 295), ('TP3', 'GND', 305)):
         s.place('Connector', 'TestPoint', ref, net, x, 150, {'1': net},
