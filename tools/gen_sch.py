@@ -84,6 +84,8 @@ def project_symbol(name):
     converted from EasyEDA/LCSC with easyeda2kicad (tools/easyeda/), renamed and pointed at fm1_dongle footprints"""
     if name == 'SY6280AAC':
         return SY6280_BLOCK
+    if name == 'SN74LVC1G3157':
+        return SW3157_BLOCK
     src, orig = PROJECT_SYMBOLS[name]
     txt = (HERE / 'tools' / 'easyeda' / src).read_text()
     block = symbol_block_text(txt, orig)
@@ -137,6 +139,27 @@ SY6280_BLOCK = '''(symbol "fm1_dongle:SY6280AAC" (pin_names (offset 1.016)) (exc
 \t\t)
 \t)'''
 
+# SPDT analog switch, pin map from the TI datasheet SCES424O (June 2025) table 4-1, DCK (SC70-6) package:
+# 1 B2, 2 GND, 3 B1, 4 A (common), 5 VCC, 6 S. Function table 7-1: S low -> A = B1, S high -> A = B2
+SW3157_BLOCK = '''(symbol "fm1_dongle:SN74LVC1G3157" (pin_names (offset 1.016)) (exclude_from_sim no) (in_bom yes) (on_board yes)
+\t\t(property "Reference" "U" (at -5.08 6.35 0) (effects (font (size 1.27 1.27)) (justify left)))
+\t\t(property "Value" "SN74LVC1G3157" (at -5.08 -11.43 0) (effects (font (size 1.27 1.27)) (justify left)))
+\t\t(property "Footprint" "Package_TO_SOT_SMD:SOT-363_SC-70-6" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+\t\t(property "Datasheet" "https://www.ti.com/lit/ds/symlink/sn74lvc1g3157.pdf" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+\t\t(property "Description" "TI SPDT analog switch: S low connects A to B1, S high connects A to B2" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+\t\t(symbol "SN74LVC1G3157_0_1"
+\t\t\t(rectangle (start -5.08 5.08) (end 5.08 -7.62) (stroke (width 0.254) (type default)) (fill (type background)))
+\t\t)
+\t\t(symbol "SN74LVC1G3157_1_1"
+\t\t\t(pin bidirectional line (at -7.62 2.54 0) (length 2.54) (name "B2" (effects (font (size 1.27 1.27)))) (number "1" (effects (font (size 1.27 1.27)))))
+\t\t\t(pin power_in line (at 0 -10.16 90) (length 2.54) (name "GND" (effects (font (size 1.27 1.27)))) (number "2" (effects (font (size 1.27 1.27)))))
+\t\t\t(pin bidirectional line (at -7.62 0 0) (length 2.54) (name "B1" (effects (font (size 1.27 1.27)))) (number "3" (effects (font (size 1.27 1.27)))))
+\t\t\t(pin bidirectional line (at 7.62 0 180) (length 2.54) (name "A" (effects (font (size 1.27 1.27)))) (number "4" (effects (font (size 1.27 1.27)))))
+\t\t\t(pin power_in line (at 0 7.62 270) (length 2.54) (name "VCC" (effects (font (size 1.27 1.27)))) (number "5" (effects (font (size 1.27 1.27)))))
+\t\t\t(pin input line (at -7.62 -5.08 0) (length 2.54) (name "S" (effects (font (size 1.27 1.27)))) (number "6" (effects (font (size 1.27 1.27)))))
+\t\t)
+\t)'''
+
 
 # manufacturer part numbers, from the LCSC product pages (2026-10-17)
 MPN = {'C7437027': 'CH32X035G8U6', 'C5446': 'XC6206P332MR', 'C55136': 'SY6280AAC', 'C899473': 'H11L1SM',
@@ -144,7 +167,7 @@ MPN = {'C7437027': 'CH32X035G8U6', 'C5446': 'XC6206P332MR', 'C55136': 'SY6280AAC
        'C22859': '0603WAF100JT5E', 'C23140': '0603WAF330JT5E', 'C22962': '0603WAF2200T5E', 'C21190': '0603WAF1001T5E',
        'C23186': '0603WAF5101T5E', 'C23212': '0603WAF6801T5E', 'C25804': '0603WAF1002T5E', 'C22809': '0603WAF1502T5E',
        'C23206': '0603WAF5602T5E', 'C25803': '0603WAF1003T5E', 'C14663': 'CC0603KRX7R9BB104', 'C15849': 'CL10A105KB8NNNC',
-       'C81598': '1N4148W', 'C2286': 'KT-0603R'}
+       'C81598': '1N4148W', 'C2286': 'KT-0603R', 'C38663': 'SN74LVC1G3157DCKR'}
 
 
 # ---------------------------------------------------------------- schematic builder
@@ -282,11 +305,11 @@ def main():
     s.place('MCU_WCH_RiscV', 'CH32X035G8U6', 'U1', 'CH32X035G8U6', 190, 90,
             {'2': '+3V3', '29': 'GND',
              '26': 'USB_DM', '27': 'USB_DP',
-             '21': 'MIDI_TX', '22': 'MIDI_RX',
+             '21': 'MIDI_TX', '22': 'MIDI_RX', '20': 'OUT_SEL',
              '25': 'SDI_DIO',
              '5': 'VBUS_EN', '6': 'LED'},
             footprint='fm1_dongle:QFN-28_L4.0-W4.0-P0.40-BL-EP2.8', lcsc='C7437027',
-            nc=('1', '3', '4', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '23', '24', '28'),
+            nc=('1', '3', '4', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '23', '24', '28'),
             extra=(('Note', 'QFN28 F7P6/TSSOP20 has NO USB host; G8U6 required. footprint from EasyEDA/LCSC for C7437027 (EP 2.8 mm).'),))
     s.place('Device', 'C', 'C4', '100n', 230, 50, {'1': '+3V3', '2': 'GND'}, footprint=C, lcsc='C14663')
     # no D+/D- pull-downs: the X035 host port has them internally (RB_UH_PD_DIS = 0); stubs on a USB pair are worse than nothing
@@ -303,7 +326,15 @@ def main():
             extra=(('Note', 'Rp: the FM-1 sees a default-USB host'),))
 
     # ---- MIDI OUT, TRS type A, 3.3 V
-    s.place('Device', 'R', 'R7', '10', 180, 150, {'1': 'MIDI_TX', '2': 'MIDI_TIP_OUT'}, footprint=R, lcsc='C22859')
+    # hardware THRU: U5 picks what drives the OUT jack's tip. OUT_SEL low (R13 default, MCU in reset or blank)
+    # = B1 = MIDI_RX, the opto output: MIDI IN copied to MIDI OUT with no firmware. OUT_SEL high = B2 = MIDI_TX.
+    s.place('fm1_dongle', 'SN74LVC1G3157', 'U5', 'SN74LVC1G3157', 150, 150,
+            {'1': 'MIDI_TX', '3': 'MIDI_RX', '4': 'MIDI_OUT_DATA', '6': 'OUT_SEL', '5': '+3V3', '2': 'GND'},
+            footprint='Package_TO_SOT_SMD:SOT-363_SC-70-6', lcsc='C38663',
+            extra=(('Note', 'TI SCES424O: 1 B2, 2 GND, 3 B1, 4 A, 5 VCC, 6 S; S low A=B1, S high A=B2. Ron <= 25 ohm at 3 V'),))
+    s.place('Device', 'R', 'R13', '100k', 150, 170, {'1': 'OUT_SEL', '2': 'GND'}, footprint=R, lcsc='C25803',
+            extra=(('Note', 'OUT_SEL default low = hardware THRU until firmware drives PB9 high'),))
+    s.place('Device', 'R', 'R7', '10', 180, 150, {'1': 'MIDI_OUT_DATA', '2': 'MIDI_TIP_OUT'}, footprint=R, lcsc='C22859')
     s.place('Device', 'R', 'R8', '33', 190, 150, {'1': '+3V3', '2': 'MIDI_RING_OUT'}, footprint=R, lcsc='C23140')
     s.place('fm1_dongle', 'PJ-320D', 'J3', 'PJ-320D', 210, 150,
             {'4': 'MIDI_TIP_OUT', '3': 'MIDI_RING_OUT', '1': 'GND', '2': 'GND'},
@@ -347,7 +378,8 @@ def main():
            'TRS type A: tip = MIDI pin 5 (data), ring = pin 4 (source), sleeve = pin 2.', 150, 185)
 
     s.write(HERE / f'{PROJECT}.kicad_sch')
-    blocks = [SY6280_BLOCK.replace('(symbol "fm1_dongle:SY6280AAC"', '(symbol "SY6280AAC"', 1)] + \
+    blocks = [SY6280_BLOCK.replace('(symbol "fm1_dongle:SY6280AAC"', '(symbol "SY6280AAC"', 1),
+              SW3157_BLOCK.replace('(symbol "fm1_dongle:SN74LVC1G3157"', '(symbol "SN74LVC1G3157"', 1)] + \
              [project_symbol(n) for n in PROJECT_SYMBOLS]
     (HERE / 'fm1_dongle.kicad_sym').write_text(
         '(kicad_symbol_lib (version 20241209) (generator "gen_sch") (generator_version "9.0")\n\t'

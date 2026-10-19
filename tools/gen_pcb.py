@@ -61,15 +61,19 @@ PLACE = {
     'R12': (-6.0, 6.45, 0),          # VBUS_EN 100k pull-down, under the switch's EN pin
     'TP2': (6.15, -0.45, 0),          # DIO: free corner right of the tongue, pin 25 is on the MCU's top row
     'TP1': (8.75, -0.45, 0),          # 3V3
-    'TP3': (5.0, 2.95, 0),           # GND
     'R10': (8.7, 3.3, 90),           # MIDI_RX 10k pull-up, above U4 pin 4
-    'C5': (4.6, 5.5, 0),             # opto VCC 100 nF, above U4 pin 6 / pin 5
+    # hardware THRU switch between the MCU's TX/PB9 pins and the opto output: top row S / VCC / A faces the MCU
+    # side, bottom row B2 (TX, via from the back) / GND (into U4 pin 5) / B1 (RX, straight into U4 pin 4)
+    'U5': (6.82, 5.5, 90),           # SN74LVC1G3157, SC-70-6
+    'R13': (4.95, 2.75, 0),          # OUT_SEL 100k pull-down (hardware THRU by default), under the RX trunk
+    'C5': (4.1, 6.7, 0),             # opto VCC 100 nF: +3V3 pad right over U4 pin 6, GND pad right over pin 5
     # ---- row Q (y 7.2 .. 10.4): LDO and its caps left, LED centre
     'U2': (-5.6, 8.8, AUTO),         # XC6206: VO toward C2, VI toward C1
     'C1': (-8.9, 8.5, 90),           # 5 V 1 uF at the LDO input
     'C2': (-2.85, 8.9, 90),          # 3V3 1 uF at the LDO output
     'R11': (-0.55, 7.9, 0),          # LED 1k
     'D2': (-0.55, 9.55, 0),          # LED, top face, visible
+    'TP3': (0.0, 20.9, 0),           # GND LinkE pad: free pocket between J2, R9 and the jacks (U5 took its corner)
     # ---- row R (y 10.8 .. 22.3): J2 left with its CC pull-downs; opto right; series parts above each jack's pads
     'R2': (-0.35, AUTO, 90),         # CC1 5.1k next to J2 A5
     'R3': (-0.35, AUTO, 90),         # CC2 5.1k next to J2 B5
@@ -350,9 +354,9 @@ def main():
     print('orientations:', {r: fps[r].GetOrientationDegrees() for r in ('U1', 'U2', 'U3', 'U4', 'J2')})
     for ref in ('U1', 'U3'):
         print(f'  {ref} pads 26/27 or 1/5:', {n: tuple(round(v, 2) for v in pad_pos(fps[ref], n)) for n in (('26', '27') if ref == 'U1' else ('1', '5'))})
-    def body(fp):                               # F.Fab / silk outline, the plastic that sits on the board
-        items = [g for g in fp.GraphicalItems() if g.GetLayer() in (pcbnew.F_Fab, pcbnew.F_SilkS)
-                 and g.GetClass() != 'PCB_TEXT']
+    def body(fp):                               # F.Fab outline (silk if the part has none): the plastic on the board
+        items = [g for g in fp.GraphicalItems() if g.GetLayer() == pcbnew.F_Fab and g.GetClass() != 'PCB_TEXT'] or \
+                [g for g in fp.GraphicalItems() if g.GetLayer() == pcbnew.F_SilkS and g.GetClass() != 'PCB_TEXT']
         return bbox_of(items)
     pads_bb = {r: bbox_of([p for p in fp.Pads() if p.GetNumber()]) for r, fp in fps.items()}
     bodies = {r: body(fp) for r, fp in fps.items()}
@@ -363,7 +367,8 @@ def main():
             if 'J1' in (a, bref):
                 continue
             if pads_bb[a] and pads_bb[bref] and overlap(pads_bb[a], pads_bb[bref], PAD_CLEAR):
-                gap = min(rect_gap(p, q) for p in fps[a].Pads() for q in fps[bref].Pads())   # pad by pad, not group bbox
+                gap = min((rect_gap(p, q) for p in fps[a].Pads() for q in fps[bref].Pads()   # pad by pad, not group bbox;
+                           if not (p.GetNetname() and p.GetNetname() == q.GetNetname())), default=9)  # same net may touch
                 if gap < PAD_CLEAR:
                     issues += 1; print(f'  PAD SPACING {gap:.2f} < {PAD_CLEAR}: {a} vs {bref}')
             for x, y in ((a, bref), (bref, a)):

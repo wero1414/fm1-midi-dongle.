@@ -30,6 +30,7 @@ EDGE_GAP = 0.3           # silk to board edge
 LABELS = {'TP1': '3V3', 'TP2': 'DIO', 'TP3': 'GND'}
 REV = 'v4 2026-10'
 EASYEDA_BODY = ('U1', 'U2', 'U3', 'U4', 'J3', 'J4')   # their courtyard is the body outline
+INSIDE_OK = ('U4',)            # outline big enough to carry its designator inside when nothing fits outside
 SILK_LAYERS = ('"F.SilkS"', '"B.SilkS"')
 
 
@@ -227,9 +228,19 @@ def main():
             cands = [c for c in cands if ok(c[0], c[1], pcbnew.F_SilkS)
                      and not any(o[0] <= c[0] <= o[2] and o[1] <= c[1] <= o[3] for o in
                                  [grow(r4(q.GetBoundingBox()), PAD_GAP + 0.1) for q in fp.Pads()])]
+            tight = []
+            if not cands:                       # boxed in: a 0.3 mm dot 0.2 mm off the pad's outer side
+                tr = grow(r4(p1.GetBoundingBox()), 0.35)
+                tight = [c for c in [(tr[0], py), (tr[2], py), (px, tr[1]), (px, tr[3])]
+                         if not (bb[0] < c[0] < bb[2] and bb[1] < c[1] < bb[3]) and ok(c[0], c[1], pcbnew.F_SilkS)
+                         and not any(o[0] <= c[0] <= o[2] and o[1] <= c[1] <= o[3] for o in
+                                     [grow(r4(q.GetBoundingBox()), 0.3) for q in fp.Pads()])]
             if cands:
                 x, y = min(cands, key=lambda c: -math.hypot(c[0] - cx, c[1] - cy))
                 add_dot(fp, x, y)
+            elif tight:
+                x, y = min(tight, key=lambda c: -math.hypot(c[0] - cx, c[1] - cy))
+                add_dot(fp, x, y, r=0.15)
             else:
                 print(f'  no room for the pin-1 dot of {ref}')
 
@@ -301,6 +312,14 @@ def main():
             t.SetTextSize(pcbnew.VECTOR2I(FromMM(REF_H), FromMM(REF_H))); t.SetTextThickness(FromMM(TEXT_W))
         anchor = union([r4(p.GetBoundingBox()) for p in fp.Pads()] + ([bodies[ref]] if bodies.get(ref) else []))
         best = try_place(fp, t, anchor)
+        if best is None and ref in INSIDE_OK:   # big package, no room around it: inside its own outline
+            t.SetTextAngleDegrees(0); t.SetPosition(pcbnew.VECTOR2I(0, 0))
+            tb = text_box(t); bb = bodies[ref]
+            x = (bb[0] + bb[2]) / 2 - (tb[0] + tb[2]) / 2; y = (bb[1] + bb[3]) / 2 - (tb[1] + tb[3]) / 2
+            r = (tb[0] + x, tb[1] + y, tb[2] + x, tb[3] + y)
+            if not any(hit(r, o) for o in opens[pcbnew.F_SilkS]) and not any(hit(r, grow(q, 0.25)) for q in placed):
+                best = (0, 0, x, y, r)
+                print(f'    {ref}: designator inside its outline (no room outside)')
         if best is None:
             missing.append(ref)
             if t.GetParentFootprint():

@@ -8,7 +8,7 @@ House rules (house_rules.yaml + the owner's instructions for this board):
   - vias 0.6/0.3 signal and GND stitching, 0.8/0.4 power
   - In1 = GND plane, In2 = +3V3 plane, GND pours on F.Cu and B.Cu, +5V_IN as a B.Cu pour on the power side
 
-Layers: F.Cu parts and short links; B.Cu carries the three long nets (MIDI_TX, CC_FM1, VBUS_EN) and the 5 V pour.
+Layers: F.Cu parts and short links; B.Cu carries the long nets (MIDI_OUT_DATA, MIDI_TX, CC_FM1, VBUS_EN) and the 5 V pour.
 Run:  python3 tools/gen_pcb.py && python3 tools/route.py
 """
 import pathlib
@@ -100,7 +100,7 @@ path('+3V3', F, PWR, (-2.55, 4.03), (-3.6, 4.03)); via('+3V3', -3.6, 4.03, VIA_P
 path('+3V3', F, PWR, (-4.36, 7.85), (-3.9, 7.85), (-3.63, 8.12), (-2.85, 8.12))  # U2 VO -> C2
 path('+3V3', F, PWR, (-2.85, 8.12), (-2.85, 7.4), (-3.1, 7.15)); via('+3V3', -3.1, 7.0, VIA_P)
 path('+3V3', F, PWR, (-3.1, 7.15), (-3.1, 7.0))
-path('+3V3', F, PWR, (3.83, 5.5), (3.5, 5.83), (3.5, 7.3), (3.2, 7.6), (2.86, 7.6))  # C5 -> U4 VCC
+path('+3V3', F, PWR, (3.325, 7.1), (3.325, 7.6))                                 # C5 -> U4 VCC (pin 6)
 path('+3V3', F, PWR, (2.86, 8.2), (1.3, 8.2)); via('+3V3', 1.3, 8.2, VIA_P)
 path('+3V3', F, PWR, (8.7, -0.45), (8.7, 2.48)); via('+3V3', 8.7, 1.2, VIA_P)  # TP1 -> R10
 path('+3V3', F, PWR, (-3.67, 22.4), (-2.8, 22.4)); via('+3V3', -2.8, 22.4, VIA_P)            # R8
@@ -114,11 +114,24 @@ path('ISET', F, SIG, (-8.9, 3.0), (-6.95, 3.0))
 path('LED', F, SIG, (-1.4, 5.4), (-1.95, 5.4), (-2.15, 5.6), (-2.15, 7.5), (-1.75, 7.9), (-1.38, 7.9))
 path('LED_K', F, SIG, (0.26, 7.9), (0.26, 9.55))
 path('SDI_DIO', F, SIG, (0.6, 2.6), (0.6, 1.6), (0.9, 1.3), (5.85, 1.3), (6.15, 1.0), (6.15, -0.45))
-path('MIDI_RX', F, SIG, (1.8, 2.6), (1.8, 2.1), (2.1, 1.8), (7.3, 1.8), (7.6, 2.1), (7.6, 3.82),
-     (7.9, 4.12), (8.7, 4.12), (8.7, 7.6))                                       # pin 22 -> R10 -> U4 pin 4
-path('MIDI_TX', F, SIG, (2.6, 3.4), (3.3, 3.4), (3.6, 3.7), (3.6, 4.2)); via('MIDI_TX', 3.6, 4.2)
-path('MIDI_TX', B, SIG, (3.6, 4.2), (3.6, 21.0), (3.15, 21.45), (-6.78, 21.45)); via('MIDI_TX', -6.78, 21.45)
-path('MIDI_TX', F, SIG, (-6.78, 21.45), (-6.78, 22.4))
+path('MIDI_RX', F, SIG, (1.8, 2.6), (1.8, 2.1), (2.1, 1.8), (7.3, 1.8), (7.6, 2.1), (7.6, 3.6),
+     (7.9, 3.9), (8.4, 3.9))                                                     # pin 22 -> R10
+path('MIDI_RX', F, SIG, (8.7, 4.12), (8.7, 7.6))                                 # R10 -> U4 pin 4
+path('MIDI_RX', F, SIG, (7.47, 6.6), (7.47, 7.5))                                  # U4 pin 4 -> U5 B1 (THRU)
+
+# ---- hardware THRU switch U5: the OUT jack's tip follows B1 (opto, OUT_SEL low) or B2 (TX, OUT_SEL high)
+path('MIDI_TX', F, SIG, (2.6, 3.4), (2.95, 3.4), (3.2, 3.15), (3.2, 2.6)); via('MIDI_TX', 3.2, 2.6)
+path('MIDI_TX', B, SIG, (3.2, 2.6), (3.2, 5.15), (3.5, 5.45), (5.4, 5.45)); via('MIDI_TX', 5.4, 5.45)
+path('MIDI_TX', F, SIG, (5.4, 5.45), (6.07, 6.12))                                # -> U5 B2
+path('OUT_SEL', F, SIG, (2.6, 3.8), (5.87, 3.8), (6.17, 4.1), (6.17, 4.4))          # PB9 -> U5 S
+path('OUT_SEL', F, SIG, (4.175, 3.225), (4.175, 3.8))                            # R13 pull-down
+path('+3V3', F, PWR_MIN, (6.82, 4.4), (6.82, 3.5)); via('+3V3', 6.82, 3.5, VIA_P)  # U5 VCC
+path('GND', F, PWR_MIN, (6.82, 6.6), (6.82, 6.85), (6.27, 7.4))                   # U5 GND -> U4 pin 5
+path('GND', F, PWR_MIN, (5.775, 2.75), (6.25, 2.75), (6.55, 2.45)); via('GND', 6.55, 2.45)  # R13
+path('MIDI_OUT_DATA', F, SIG, (7.47, 4.9), (7.75, 4.9), (8.1, 5.25)); via('MIDI_OUT_DATA', 8.1, 5.25)
+path('MIDI_OUT_DATA', B, SIG, (8.1, 5.25), (8.1, 21.0), (7.65, 21.45), (-6.78, 21.45))
+via('MIDI_OUT_DATA', -6.78, 21.45)
+path('MIDI_OUT_DATA', F, SIG, (-6.78, 21.45), (-6.78, 22.4))
 path('MIDI_TIP_OUT', F, SIG, (-8.43, 22.4), (-8.43, 25.45))
 path('MIDI_RING_OUT', F, SIG, (-5.33, 22.4), (-5.33, 23.1), (-6.1, 23.87), (-6.1, 28.9), (-6.65, 29.45), (-8.0, 29.45))
 path('CC1_IN', F, SIG, (-2.78, 14.65), (-1.3, 14.65), (-0.6, 15.35))
@@ -141,8 +154,7 @@ GND_VIAS = [
     (-2.0, 10.5),                       # C2 / U2 GND / D2
     (-1.44, 12.45), (-1.44, 19.5),      # J2 GND contacts
     (0.6, 13.72), (0.6, 18.58),         # R2, R3
-    (6.3, 2.95),                        # TP3
-    (6.3, 5.5),                         # C5
+    (1.05, 20.4),                       # TP3 (clear of the MIDI_OUT_DATA run on B.Cu at y 21.45)
     (5.4, 9.6),                         # U4 pin 5
     (-1.7, 23.2), (-6.2, 32.45),        # J3 sleeve pads
 ]
@@ -157,8 +169,8 @@ path('GND', F, PWR, (-2.78, 12.65), (-1.64, 12.65), (-1.44, 12.45))
 path('GND', F, PWR_MIN, (-2.78, 19.15), (-1.64, 19.15), (-1.44, 19.35), (-1.44, 19.5))
 path('GND', F, PWR, (-0.35, 13.72), (0.6, 13.72))
 path('GND', F, PWR, (-0.35, 18.58), (0.6, 18.58))
-path('GND', F, PWR, (5.38, 5.5), (6.3, 5.5))
-path('GND', F, PWR, (5.0, 2.95), (6.3, 2.95))
+path('GND', F, PWR, (4.875, 7.1), (4.875, 7.6))                                  # C5 -> U4 pin 5
+path('GND', F, PWR, (0.4, 20.4), (1.05, 20.4))                                     # TP3
 path('GND', F, PWR, (5.4, 8.2), (5.4, 9.6))
 path('GND', F, PWR, (-8.9, 4.83), (-8.9, 5.75))
 path('GND', F, PWR, (-5.17, 6.45), (-5.17, 6.87), (-5.6, 7.3))
@@ -170,6 +182,13 @@ path('GND', F, PWR_MIN, (-2.75, 0.2), (-3.6, 0.2), (-4.5, 0.2))     # A1 + pad 2
 path('GND', B, PWR_MIN, (-2.75, 0.2), (-4.5, 0.2))                  # B12
 path('GND', F, PWR_MIN, (2.75, 0.2), (3.6, 0.2))                    # A12
 path('GND', B, PWR_MIN, (2.75, 0.2), (3.6, 0.2))                    # B1 + pad 26
+
+# GND pads already tied by a trace whose pour pocket is too tight for two spokes: solid to the pour instead
+FP = {f.GetReference(): f for f in b.GetFootprints()}
+for ref, num in (('D2', '1'), ('C5', '2')):
+    for pad in FP[ref].Pads():
+        if pad.GetNumber() == num:
+            pad.SetLocalZoneConnection(pcbnew.ZONE_CONNECTION_FULL)
 
 OUTLINE = [(-10, -1.97), (10, -1.97), (10, 36.0), (-10, 36.0)]
 zone('GND', F, OUTLINE, priority=0, label='GND F pour')

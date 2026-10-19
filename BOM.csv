@@ -3,6 +3,7 @@ U1,1,CH32X035G8U6,RISC-V MCU with USB FS host; the TSSOP-20 F7P6 has NO host,QFN
 U2,1,XC6206P332MR,3.3 V LDO 200 mA,SOT-23-3,C5446,Basic,0.15,0.10,yes
 U3,1,SY6280AAC,Host VBUS load switch; Ilim = 6800/Rset,SOT-23-5,C55136,Extended,0.09,0.06,yes (LCSC + datasheet)
 U4,1,H11L1SM,MIDI IN optocoupler Schmitt output 3-16 V,SOP-6,C899473,Extended,0.68,0.33,yes
+U5,1,SN74LVC1G3157DCKR (TI),Hardware MIDI THRU: SPDT switch feeding the OUT jack tip. S low = B1 = opto output (THRU); S high = B2 = MCU TX. Ron <= 25 ohm at 3 V,SC-70-6,C38663,Extended,0.075,0.048,2026-10-19: pinout + function table from TI SCES424O; price/stock 227k from the JLC parts DB snapshot (not re-fetched live)
 J1,1,USB-C male plug SHOU HAN TYPE-C 24P-GTJB 040,To the FM-1. Board-edge clamp plug: PCB 0.80 +/-0.05 mm with pads on both faces. JLCPCB Standard-assembly only,SMD 24P,C3151751,Extended,0.13,0.07,verified 2026-10-17 (datasheet p.2)
 J2,1,USB-C female TYPE-C-31-M-12,5 V power in only,SMD 16P,C165948,Extended,0.17,0.10,yes
 J3,1,PJ-320D (USAKRO),MIDI OUT 3.5 mm 4-pole SMD jack: 1 sleeve 2 ring2 3 ring1 4 tip; EasyEDA footprint; Economic assembly,SMD,C521460,Extended,0.11,0.066,verified 2026-10-17 (datasheet + KiCad PJ320D cross-check)
@@ -19,5 +20,5 @@ D1,1,Diode,1N4148W (reverse protection across U4 LED),SOD-123,C81598,Basic,,,ver
 D2,1,LED red,status,0603,C2286,Basic,,,2026-10-18: C72043 (green) out of stock; owner chose Basic red KT-0603R, Vf 1.8-2.4 V, ~1.3 mA via R11 1k (JLC DB)
 "C4,C5",2,Capacitor,100 nF 50 V X7R (U1 VDD / U4 VCC),0603,C14663,Basic,,,verified 2026-10-17
 "C1,C2,C3",3,Capacitor,1 µF 50 V X5R (LDO in / LDO out / U3 out),0603,C15849,Basic,,,verified 2026-10-17 (page showed out of stock; re-check)
-R12,1,Resistor,100k (U3 EN pull-down: VBUS off until firmware enables),0603,C25803,Basic,,,verified 2026-10-17
+"R12,R13",2,Resistor,100k (R12: U3 EN pull-down, VBUS off until firmware enables; R13: OUT_SEL pull-down, hardware THRU until firmware selects TX),0603,C25803,Basic,,,verified 2026-10-17
 "TP1,TP2,TP3",3,Pad,SDI programming pads 1.5 mm (3V3 / DIO / GND) for WCH-LinkE wires,bare copper,none,,0,0,no part

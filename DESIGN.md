@@ -17,7 +17,9 @@ that sends MIDI over USB (Melodee, SLOOP, Felucca, Hortator, stock).
  J2 USB-C F (5 V in) --VBUS--> U3 SY6280 (1 A limit, EN from MCU) --VBUS--> J1 USB-C male --> FM-1
                       \--> U2 XC6206 3.3 V --> U1 CH32X035G8U6
  U1 PC16/UDM (pin 26), PC17/UDP (pin 27) <--> J1 D-, D+        (host side: 15k pull-downs, see R5 R6)
- U1 PB10/TX1 (pin 21) --10 Ω--> J3 tip ; 3V3 --33 Ω--> J3 ring ; sleeve GND      MIDI OUT, type A
+ U1 PB10/TX1 (pin 21) --> U5 B2 \
+ U4 out (MIDI_RX)     --> U5 B1  > U5 A --10 Ω--> J3 tip ; 3V3 --33 Ω--> J3 ring ; sleeve GND   MIDI OUT / THRU, type A
+ U1 PB9 (pin 20)      --> U5 S  /  (100k R13 to GND: S low = B1 = hardware THRU by default)
  J4 tip/ring --220 Ω--> U4 H11L1SM LED (D1 reverse) ; U4 out --pull-up--> U1 PB11/RX1 (pin 22)   MIDI IN
  U1 PC18/DIO (pin 25) + GND + 3V3 --> 3-pin SDI header/pads for WCH-LinkE
  U1 VDD pin 2, GND = exposed pad (pin "0" in the datasheet diagram)
@@ -64,6 +66,9 @@ Free for EN / LED: PA0..PA7 (pins 3..11 area), PB0, PB3, PC0, PC3 - pick during 
   composite device (audio + MIDI), skip the audio interfaces; take bulk IN and bulk OUT.
 - Loop: poll bulk IN, unpack 4-byte USB-MIDI event packets to serial bytes on USART1 at 31250 baud;
   parse USART1 RX (running status) into USB-MIDI packets on bulk OUT.
+- PB9 (OUT_SEL) push-pull: high = MIDI OUT jack carries the FM-1's USB MIDI (U5 B2 = TX), low = hardware THRU
+  (U5 B1 = opto output). R13 holds it low through reset, so a blank or crashed MCU still passes MIDI IN to OUT.
+  How the user switches modes (a SysEx, a long press, a saved setting) is a firmware decision.
 - Re-enumerate on detach. Enable U3 only after power is stable; LED = connected.
 - Toolchain: MounRiver Studio or riscv-none-elf-gcc; flash with WCH-LinkE.
 
@@ -150,7 +155,8 @@ through KiCad 10's Python bindings segfaults). Rules from the pcb-house-rules sk
 - No loops: `tools/check_loops.py` counts edges - nodes + groups per net over tracks/vias/pads: 0 on every net.
 - Widths 0.2 signal, 0.3 power next to fine-pitch pads, 0.5 power. Vias 0.6/0.3 signal + GND stitching, 0.8/0.4 power.
 - In1 GND plane, In2 +3V3 plane, GND pours on F.Cu and B.Cu, +5V_IN as a B.Cu pour on the power side.
-- Three nets use B.Cu: MIDI_TX (pin 21 to R7 at the jack), CC_FM1 (A5 is boxed in by A4's VBUS stub), VBUS_EN
+- B.Cu nets: MIDI_OUT_DATA (U5 A to R7 at the jack, down the right side), MIDI_TX (pin 21 to U5 B2, under
+  OUT_SEL), CC_FM1 (A5 is boxed in by A4's VBUS stub), VBUS_EN
   (U3's IN pin sits between pin 5 and U3's EN pin).
 - VBUS_FM1 reaches the plug on A4 (top) and B4/B9 (back, one 0.8/0.4 via + a B.Cu link). A9 is NC: it sits right
   of the USB pair and DIO/RX must pass under it. 3 of 4 contacts, ~0.33 A each at the 1 A limit.
@@ -173,10 +179,10 @@ fm1-midi-dongle.kicad_pro --layers 4 && python3 tools/route.py && python3 tools/
   noses (back, 2.1 mm out).
 - Silkscreen (`tools/silk.py`): the library silk is replaced by one style: body outlines (EasyEDA courtyard = body,
   KiCad F.Fab) clipped 0.2 mm from mask openings and holes and 0.3 mm inside the edge, pin-1 dots on U1-U4,
-  cathode brackets on D1/D2, no outline on R/C. Designators 0.8 x 0.8 mm, 0.15 stroke (owner's choice; JLC's
+  cathode brackets on D1/D2, no outline on R/C (U5's dot is 0.3 mm: C5 leaves 0.7 mm beside its pin 1). Designators 0.8 x 0.8 mm, 0.15 stroke (owner's choice; JLC's
   standard legend minimum is 1.0 mm, 0.8 only on their high-precision legend), placed most-constrained first, at
-  least 0.15 mm from pads, never closer to another part than to their own: 21 of 25 fit, R7, R11, U2 stay on
-  F.Fab (assembly drawing). Test pads labelled 3V3 / DIO / GND. Back: board name, revision, MIDI OUT / MIDI IN
+  least 0.15 mm from pads, never closer to another part than to their own: 24 of 27 fit (U4's inside its own
+  outline since 2026-10-19, U5 took the spot above it), R7, R11, U2 stay on F.Fab (assembly drawing). Test pads labelled 3V3 / DIO / GND. Back: board name, revision, MIDI OUT / MIDI IN
   under the jacks, TRS type A, 5V IN at J2. Old silk is stripped from the file text, since removing it through
   the SWIG API corrupts the heap.
 - 3D: the plug's EasyEDA WRL had every material at transparency 1.0 (invisible); set to 0. J2's EasyEDA model
@@ -184,3 +190,21 @@ fm1-midi-dongle.kicad_pro --layers 4 && python3 tools/route.py && python3 tools/
   library is not installed, so the R/C/LED 0603 and SOD-123 STEP models are vendored in `fm1_dongle.3dshapes`
   (KiCad 3D library, CC-BY-SA 4.0) and gen_pcb.py points those footprints at them.
 - Renders: `docs/pcb3d_{top,bot,iso}.png`, `docs/silk_{top,bot}.png`.
+
+## Hardware MIDI THRU (2026-10-19, owner asked for it)
+Owner chose: the OUT jack switchable between OUT and THRU (no third jack, outline and case unchanged), selected
+by an MCU pin.
+- U5 SN74LVC1G3157DCKR (TI, LCSC C38663, SC-70-6, Extended). Pin map and logic from TI SCES424O (June 2025),
+  table 4-1 and function table 7-1: 1 B2, 2 GND, 3 B1, 4 A, 5 VCC, 6 S; S low connects A to B1, S high A to B2.
+  Ron <= 25 ohm at VCC 3 V: adds to R7's 10 ohm in the tip line (MIDI 3.3 V type A sink current drops a few %).
+- B1 = MIDI_RX (H11L1 output with R10 pull-up): in THRU the OUT jack's tip follows the opto with no firmware
+  and no added delay beyond the opto (~us); the MCU still receives MIDI IN on PB11 at the same time.
+  B2 = MIDI_TX (PB10). A = MIDI_OUT_DATA -> R7 -> J3 tip. S = OUT_SEL = PB9 (pin 20, plain I/O, datasheet V2.3
+  pin table), R13 100k to GND (same part as R12, no new BOM line).
+- THRU only works while the dongle is powered (the jack's ring is fed from 3.3 V either way).
+- Layout: U5 sits in the old TP3 corner between the MCU and the opto (top row S / VCC / A, bottom row
+  B2 / GND / B1): B1 drops straight into U4 pin 4, GND into U4 pin 5, A leaves by a via down the right side on
+  B.Cu, TX comes in from a via under OUT_SEL. C5 moved under U5 (its pads straight over U4 pins 6 and 5); R13 sits
+  under the RX trunk. TP3 (GND LinkE pad) moved to the free pocket between J2, R9 and the jacks, labelled GND.
+- Checks after the change: ERC 0, DRC 0 unconnected and only the 6 accepted-pending J1 edge items,
+  check_routing clean (0 any-angle), 0 loops, gen_pcb placement issues 0.
