@@ -512,9 +512,9 @@ def main():
              '26': 'USB_DM', '27': 'USB_DP',
              '21': 'MIDI_TX', '22': 'MIDI_RX', '20': 'OUT_SEL',
              '25': 'SDI_DIO',
-             '5': 'VBUS_EN', '6': 'LED'},
+             '8': 'VBUS_EN', '23': 'LED'},    # v6: PA3 (pin 8) / PB12 (pin 23), datasheet V2.2 QFN28 drawing
             footprint='fm1_dongle:QFN-28_L4.0-W4.0-P0.40-BL-EP2.8', lcsc='C7437027',
-            nc=('1', '3', '4', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '23', '24', '28'),
+            nc=('1', '3', '4', '5', '6', '7', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '24', '28'),
             extra=(('Note', 'QFN28 F7P6/TSSOP20 has NO USB host; G8U6 required. footprint from EasyEDA/LCSC for C7437027 (EP 2.8 mm).'),))
     s.place('Device', 'C', 'C4', '100n', 380, 50, {'1': '+3V3', '2': 'GND'}, footprint=C, lcsc='C14663')
     # no D+/D- pull-downs: the X035 host port has them internally (RB_UH_PD_DIS = 0)
@@ -536,16 +536,16 @@ def main():
     s.place('Device', 'R', 'R10', '10k', 180, 175, {'1': '+3V3', '2': 'MIDI_RX'}, footprint=R, lcsc='C25804')
 
     # ================= block 6: MIDI OUT with hardware THRU
-    # U5 picks what drives the OUT jack's tip. OUT_SEL high (R13 pull-up default, MCU in reset or blank) = B2 =
-    # MIDI_RX, the opto output: MIDI IN copied to MIDI OUT with no firmware. OUT_SEL low = B1 = MIDI_TX.
-    # (v5: inputs swapped against v4 so the board's lanes do not cross; B2 sits next to the opto's output pin.)
+    # U5 picks what drives the OUT jack's tip. OUT_SEL low (R13 pull-down default, MCU in reset or blank) = B1 =
+    # MIDI_RX, the opto output: MIDI IN copied to MIDI OUT with no firmware. OUT_SEL high = B2 = MIDI_TX.
+    # (v6: back to the v4 order; on the bottom face B2 and S line up with the MCU's TX and PB9 pins.)
     s.text('MIDI OUT  (TRS type A, 3.3 V)  with hardware THRU', 205, 160)
     s.place('fm1_dongle', 'SN74LVC1G3157', 'U5', 'SN74LVC1G3157', 230, 195,
-            {'1': 'MIDI_RX', '3': 'MIDI_TX', '4': 'MIDI_OUT_DATA', '6': 'OUT_SEL', '5': '+3V3', '2': 'GND'},
+            {'1': 'MIDI_TX', '3': 'MIDI_RX', '4': 'MIDI_OUT_DATA', '6': 'OUT_SEL', '5': '+3V3', '2': 'GND'},
             footprint='Package_TO_SOT_SMD:SOT-363_SC-70-6', lcsc='C38663',
             extra=(('Note', 'TI SCES424O: 1 B2, 2 GND, 3 B1, 4 A, 5 VCC, 6 S; S low A=B1, S high A=B2. Ron <= 25 ohm at 3 V'),))
-    s.place('Device', 'R', 'R13', '100k', 210, 220, {'1': '+3V3', '2': 'OUT_SEL'}, footprint=R, lcsc='C25803',
-            extra=(('Note', 'OUT_SEL pull-up: default high = hardware THRU until firmware drives PB9 low'),))
+    s.place('Device', 'R', 'R13', '100k', 210, 220, {'1': 'OUT_SEL', '2': 'GND'}, footprint=R, lcsc='C25803',
+            extra=(('Note', 'OUT_SEL pull-down: default low = hardware THRU until firmware drives PB9 high'),))
     s.place('Device', 'R', 'R7', '10', 275, 200, {'1': 'MIDI_OUT_DATA', '2': 'MIDI_TIP_OUT'}, footprint=R, lcsc='C22859')
     s.place('Device', 'R', 'R8', '33', 300, 200, {'1': '+3V3', '2': 'MIDI_RING_OUT'}, footprint=R, lcsc='C23140')
     s.place('fm1_dongle', 'PJ-320D', 'J3', 'PJ-320D', 340, 195,

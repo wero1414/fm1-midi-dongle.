@@ -1,0 +1,6 @@
+board.step
+out/board.stl
+out/*.wrl
+out/*.kicad_pcb
+__pycache__/
+out/*.kicad_pro

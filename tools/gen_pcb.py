@@ -40,65 +40,60 @@ J1_OVERHANG = 0.8              # USB-A shell front past the top edge; keeps its 
 YJ = 28.4                      # jack centres, below the J2 / opto row
 Y_BOT = YJ + 7.3               # jack body front flush with the edge, 2.1 mm nose outside
 J2_Y = 15.9                    # power receptacle, left edge, below the power row
-J2_OVERHANG = 1.0
+J2_OVERHANG = 1.5            # v5 case: shell face 0.73 mm past the edge so a USB-C plug seats through the case wall
 NOTCH_Y, NOTCH_R, NOTCH_F = 22.2, 0.6, 0.3   # case locating notches, both side edges: half-moon r 0.6 (pin d 1.2, R7 pad 0.5 mm away),
                                              # 0.3 mm fillets so the lips are not sharp; the band between J2/D1 and
                                              # the jacks is the only one free on both edges
 T = 'F.Cu'                     # single-sided: every part on the top face, one reflow pass
 AUTO = None                    # rotation chosen by pad goals (see GOALS)
 
-# MCU pins by side (rotated so 27/26 face the plug's D+/D-): left = VDD 2, VBUS_EN 5, LED 6 -> power and LED
-# on the left; right/top-right = TX 21, RX 22, DIO 25 -> MIDI and the LinkE pads on the right.
+# v6 ("slab"): every tall part on the TOP face (USB-A, USB-C, opto, jacks, LED) and every low part (<= 1.3 mm) on
+# the BOTTOM face, so the case can be a flat 12 mm slab. The MCU sits on the bottom right behind J1's pads with its
+# USB pins facing them; on the bottom face its pin sides are mirrored, so the board mirrors too: power (USB-C, SY6280,
+# LDO) on the right, MIDI (opto, MIDI IN jack, THRU switch) on the left; MIDI OUT jack on the right.
+# PLACE: ref -> (x, y, rotation[, 'B'])   (x, y seen from the top, as everything else)
 PLACE = {
-    # ref: (x, y, rotation)
-    'J1': (0.0, AUTO, 0),            # USB-A receptacle, BOTTOM face, mouth up (y set from J1_OVERHANG)
-    'U1': (AUTO, 4.6, AUTO),         # CH32X035: pins 27/26 face the top edge, right above J1's D+/D- pads
-    'J3': (-5.0, YJ, 180),           # MIDI OUT jack (left): only two resistors, traces run under the jack body
-    'J4': (5.0, YJ, 180),            # MIDI IN jack (right): tip/ring pads at x = 2, right under the opto chain
-    'J2': (AUTO, J2_Y, AUTO),        # power receptacle, opening on the left edge, pads toward the centre
-    # ---- top band (y < 1.4), freed by the old plug, between the front shell legs. Left to right: SY6280 (EN / IN
-    # face the left gap, OUT / ISET face right), its ISET resistor, the 10 uF host-port cap, the DIO pad.
-    # VBUS_HOST runs on F.Cu at y ~0.4 between R4 and the D+/D- vias (y 1.6), then down to J1's VBUS on B.Cu.
-    'U3': (-3.25, -0.15, 90),        # SY6280: OUT (1) bottom-right toward C3, ISET (3) top-right into R4; EN lane left of it
-    'R4': (0.05, -0.95, 0),          # ISET 6.8k, right of U3 pin 3
-    'C3': (2.3, -0.2, 90),           # VBUS_HOST 10 uF standing: VBUS pad down (fed at y 0.1), GND pad up beside R4's
-    'TP2': (4.45, -0.4, 0),          # DIO, inside the right front leg; DIO lane at y 1.45 comes up into it
-    'TP1': (8.75, -0.45, 0),         # 3V3, top-right corner outside the leg
-    # ---- row P (y 1.6 .. 6.6): MCU; ISET / EN parts left between the legs; THRU switch in the right column
-    'C4': (-2.55, 3.25, 90),         # VDD 100 nF, vertical against the left pin row
-    'R12': (-4.6, 5.6, 90),          # VBUS_EN 100k pull-down: EN lane (x -5.35) turns into its top pad at y 5.0
-    'R10': (8.4, 3.5, 90),           # MIDI_RX 10k pull-up in the right column: RX pad up to the RX lane (y 1.85), 3V3 via below
-    # hardware THRU switch, right column outside the right rear leg: B1 (RX) down toward U4 pin 4
-    'U5': (6.5, 8.3, 180),           # SN74LVC1G3157 in the band between the MCU / right rear leg and the opto: B2 (RX) straight
-                                     # above U4 pin 4, B1 (TX) up to the corridor right of the leg, S / VCC / A face left
-    'R13': (4.5, 3.75, 0),           # OUT_SEL 100k pull-up: OUT_SEL pad on the MCU's pin 20 line, 3V3 pad right
-    'C5': (2.5, 8.3, 180),             # opto VCC 100 nF in the band: 3V3 pad on the U5 VCC -> U4 pin 6 link, GND via left
-    # ---- row Q (y 7.2 .. 10.4): LDO and its caps left, LED centre
-    'U2': (-5.6, 8.8, AUTO),         # XC6206: VO toward C2, VI toward C1
-    'C1': (-8.9, 8.5, 90),           # 5 V 1 uF at the LDO input
-    'C2': (-2.85, 8.9, 90),          # 3V3 1 uF at the LDO output
-    'R11': (-0.55, 7.9, 0),          # LED 1k
-    'D2': (-0.55, 9.55, 0),          # LED, top face, visible
-    'TP3': (-8.6, 0.4, 0),           # GND LinkE pad: free top-left corner outside the left legs; all three SDI pads on the top edge
-    # ---- row R (y 10.8 .. 22.3): J2 left with its CC pull-downs; opto right; series parts above each jack's pads
-    'R2': (-0.35, AUTO, 90),         # CC1 5.1k next to J2 A5
-    'R3': (-0.35, AUTO, 90),         # CC2 5.1k next to J2 B5
-    'U4': (5.4, 15.05, AUTO),        # H11L1SM: 2.1 mm lower than v4 to open the U5 band above it
-    'R9': (2.4, 21.9, 90),           # MIDI IN 220 R between J4 tip (x 2) and U4 pin 1
-    'D1': (6.2, 21.8, 0),            # 1N4148W across the opto LED, under U4 pins 1/2
-    'R7': (-7.6, 22.4, 0),           # MIDI OUT tip 10 R, right above J3's tip pad
-    'R8': (-4.5, 22.4, 0),           # MIDI OUT ring 33 R
+    # ---- top face
+    'J1': (0.0, AUTO, 180),          # USB-A receptacle, mouth up (y set from J1_OVERHANG); D- left, D+ right
+    'J2': (AUTO, J2_Y, AUTO),        # USB-C power receptacle, opening on the RIGHT edge
+    'J4': (-5.0, YJ, 180),           # MIDI IN jack (left): tip/ring pads at x -8, right under the opto's LED pins
+    'J3': (5.0, YJ, 180),            # MIDI OUT jack (right): tip/ring pads at x 2, under R7 / R8
+    'U4': (-5.4, 15.05, AUTO),       # H11L1SM, left half: pin 1 over the IN tip pad, pin 4 (out) toward the MCU
+    'R9': (-8.4, 21.9, 90),          # MIDI IN 220 R between J4's tip pad and U4 pin 1
+    'D1': (-5.0, 21.8, 0),           # 1N4148W across the opto LED
+    'R7': (3.5, 22.4, 0),            # MIDI OUT tip 10 R, fed straight from U5's A pin
+    'R8': (6.6, 22.4, 0),            # MIDI OUT ring 33 R
+    'R2': (0.35, AUTO, 90),          # CC1 5.1k beside J2's A5
+    'R3': (0.35, AUTO, 90),          # CC2 5.1k beside J2's B5
+    'D2': (-8.6, 2.1, 90),           # status LED, top-left corner beside the USB-A, under the case's light pipe
+    # ---- bottom face
+    'U1': (AUTO, 12.4, AUTO, 'B'),   # CH32X035: USB pins face J1's D-/D+ pads (vias behind the pads)
+    'C4': (2.45, 9.2, 0, 'B'),       # VDD 100 nF above the MCU's right pin row
+    'U5': (-0.3, 22.15, 0),          # SN74LVC1G3157 THRU switch, top face beside R7: TX / RX / S come up through vias
+    'R13': (0.0, 19.6, 0, 'B'),      # OUT_SEL 100k pull-down, bottom, above the OUT_SEL lane's turn
+    'R10': (-4.6, 8.8, 0, 'B'),      # MIDI_RX 10k pull-up
+    'C5': (-7.9, 13.6, 90, 'B'),     # opto VCC 100 nF under U4 pins 6 / 5
+    'U3': (6.4, 15.0, 270, 'B'),     # SY6280: IN / EN face the MCU side, OUT / GND / ISET face right; OUT goes up between J2's legs
+    'U2': (7.5, 8.85, AUTO, 'B'),    # XC6206 above J2's legs (VI drops into the +5V island on In2)
+    'C1': (3.6, 14.4, 90, 'B'),      # 5 V 1 uF beside U3's IN
+    'C2': (4.9, 8.6, 90, 'B'),       # 3V3 1 uF, standing between C4 and U2
+    'R4': (9.0, 15.5, 90, 'B'),      # ISET 6.8k
+    'R12': (3.6, 17.4, 90, 'B'),     # VBUS_EN 100k pull-down under the EN lane
+    'C3': (-3.5, 3.6, 90, 'B'),      # VBUS_HOST 10 uF at J1's VBUS pad (top, x -3.5), under the USB-A
+    'R11': (-8.6, 5.6, 90),          # LED 1k, top, under the LED
+    'TP3': (-4.3, 0.4, 0, 'B'),      # SDI pads along the top edge, under the USB-A: GND / DIO / 3V3
+    'TP2': (-1.6, 0.4, 0, 'B'),
+    'TP1': (1.1, 0.4, 0, 'B'),
 }
 DNP = set()
-NO_FLIP = {'R10', 'C5'}       # pad sides chosen by the routing plan (RX pad toward the RX lane; C5's 3V3 pad on the U5 VCC link)
+NO_FLIP = set()
 # pad -> target point (board mm); the rotation minimising the summed distances wins
 GOALS = {
-    'U1': {'27': (-0.75, 1.6), '26': (0.75, 1.6)},                # D+ / D- vias above the MCU (J1 D+ left, D- right)
-    'U3': {'1': (2.3, 0.8), '5': (-2.78, 13.15), '4': (-5.35, 3.0), '3': (0.05, -0.95)},  # OUT -> C3, IN -> J2 VBUS, EN -> lane, ISET -> R4
-    'U2': {'2': (-2.85, 8.9), '3': (-8.9, 8.5)},                  # VO -> C2, VI -> C1
-    'U4': {'1': (2.0, YJ - 2.95), '2': (2.0, YJ + 1.05), '4': (1.8, 2.6)},  # LED pins toward J4 tip/ring, out up
+    'U1': {'26': (-1.0, 9.15), '27': (1.0, 9.15)},                # D- / D+ vias behind J1's pads
+    'U2': {'3': (8.8, 10.4), '2': (4.9, 8.6)},                    # VI from the 5 V pour below, VO -> C2
+    'U4': {'1': (-8.0, YJ - 2.95), '2': (-8.0, YJ + 1.05), '4': (0.0, 11.0)},  # LED pins toward J4 tip/ring, out to the MCU
 }
-ANGLES = {'U4': (0, 180), 'U3': (90,)}     # U3: pins sideways (the band is 3 mm tall), OUT toward the host port
+ANGLES = {'U4': (0, 180)}
 HOLE_CLEAR = 0.25
 PAD_CLEAR = 0.3                # want at least this between pad groups of different parts
 
@@ -212,12 +207,14 @@ def main():
         b.Add(fp)
         if ref not in PLACE:
             raise SystemExit(f'{ref} has no placement')
-        x, y, rot = PLACE[ref]
+        x, y, rot = PLACE[ref][:3]
+        if len(PLACE[ref]) > 3 and PLACE[ref][3] == 'B':
+            fp.SetPosition(MM(0, 0)); fp.Flip(MM(0, 0), pcbnew.FLIP_DIRECTION_LEFT_RIGHT)
         if ref == 'J1':
-            # bottom face, mirrored top-to-bottom: at rotation 0 the mouth points up (-y) and D+ (3) is left of
-            # D- (2), matching the MCU's 27/26. Shell front (courtyard edge) J1_OVERHANG past the top edge.
-            fp.SetPosition(MM(0, 0)); fp.Flip(MM(0, 0), pcbnew.FLIP_DIRECTION_TOP_BOTTOM); fp.SetOrientationDegrees(0)
-            front = ToMM(fp.GetCourtyard(pcbnew.B_CrtYd).BBox().GetTop())
+            # top face, turned 180 so the mouth points up (-y): D- (2) left, D+ (3) right, VBUS (1) far left.
+            # Shell front (courtyard edge) J1_OVERHANG past the top edge.
+            fp.SetPosition(MM(0, 0)); fp.SetOrientationDegrees(180)
+            front = ToMM(fp.GetCourtyard(pcbnew.F_CrtYd).BBox().GetTop())
             fp.SetPosition(MM(x, Y_TOP - J1_OVERHANG - front))
         elif ref == 'J2':
             # KiCad's HRO footprint (exact part) + the EasyEDA 3D model. After the 180 deg turn its shell legs sit
@@ -227,17 +224,19 @@ def main():
             m.m_Offset = pcbnew.VECTOR3D(0, -0.80, 0); m.m_Rotation = pcbnew.VECTOR3D(0, 0, 180); m.m_Scale = pcbnew.VECTOR3D(1, 1, 1)
             fp.Models().push_back(m)
             best = None
-            for ang in (90, 270):                     # opening to the left: solder row toward the board centre
+            for ang in (90, 270):                     # opening to the right: solder row toward the board centre
                 fp.SetOrientationDegrees(ang); fp.SetPosition(MM(0, y))
                 px = pad_pos(fp, 'A5')[0]
-                if best is None or px > best[0]:
+                if best is None or px < best[0]:
                     best = (px, ang)
             fp.SetOrientationDegrees(best[1]); fp.SetPosition(MM(0, y))
-            front = ToMM(fp.GetBoundingBox(False, False).GetLeft())
-            fp.SetPosition(MM(-(W / 2 + J2_OVERHANG) - front, y))
+            front = ToMM(fp.GetBoundingBox(False, False).GetRight())
+            fp.SetPosition(MM((W / 2 + J2_OVERHANG) - front, y))
         elif ref in ('R2', 'R3'):                     # beside J2's CC pad, same height
             cc = pad_pos(fps['J2'], 'A5' if ref == 'R2' else 'B5')
-            fp.SetOrientationDegrees(rot); fp.SetPosition(MM(x, cc[1] + (-0.1 if ref == 'R2' else 0.1)))   # 3.0 mm CC pitch: 0.1 apart for courtyards
+            other = pad_pos(fps['J2'], 'B5' if ref == 'R2' else 'A5')
+            away = 0.1 if cc[1] > other[1] else -0.1      # 3.0 mm CC pitch: 0.1 apart for courtyards
+            fp.SetOrientationDegrees(rot); fp.SetPosition(MM(x, cc[1] + away))
         elif ref in GOALS:
             orient(fp, x if x is not None else 0.0, y, GOALS[ref], ANGLES.get(ref, (0, 90, 180, 270)))
             if ref == 'U1':                           # centre the pair under the plug pads
@@ -325,18 +324,11 @@ def main():
         z.SetMinThickness(FromMM(0.25)); z.SetLocalClearance(FromMM(0.3))
         b.Add(z)
 
-    # ---- QFN exposed pad: 2 x 2 via array into the GND planes (locked, so rip scripts keep them). D+ / D- run on
-    # B.Cu under the MCU in lanes inside J1's 1.4 mm pads (D+ 0.2 outboard, D- 0.1 inboard): one via column
-    # between the lanes, one between the D- lane and the MCU's right pin row
-    ep = fps['U1']
-    lanes = [pad_pos(fps['J1'], '3')[0] - 0.2, pad_pos(fps['J1'], '2')[0] - 0.1]
-    for p in ep.Pads():
+    # ---- QFN exposed pad: 2 x 2 via array into the GND planes (locked, so rip scripts keep them)
+    for p in fps['U1'].Pads():
         if p.GetNumber() == '29':
             cx, cy = ToMM(p.GetPosition().x), ToMM(p.GetPosition().y)
-            cols = [x for x in (cx - 0.6, cx + 0.88) if all(abs(x - l) >= 0.3 + 0.1 + 0.2 - 1e-6 for l in lanes)]
-            assert len(cols) == 2, (cx, lanes)
-            for vx in cols:
-                dx = vx - cx
+            for dx in (-0.7, 0.7):
                 for dy in (-0.7, 0.7):
                     v = pcbnew.PCB_VIA(b); v.SetPosition(MM(cx + dx, cy + dy))
                     v.SetWidth(FromMM(0.6)); v.SetDrill(FromMM(0.3)); v.SetNet(netitems['GND'])
@@ -351,31 +343,32 @@ def main():
     print('  J1 pads:', {p.GetNumber(): (round(ToMM(p.GetPosition().x), 2), round(ToMM(p.GetPosition().y), 2)) for p in fps['J1'].Pads()})
     for ref in ('U1', 'U3'):
         print(f'  {ref} pads 26/27 or 1/5:', {n: tuple(round(v, 2) for v in pad_pos(fps[ref], n)) for n in (('26', '27') if ref == 'U1' else ('1', '5'))})
-    def body(fp):                               # F.Fab outline (silk if the part has none): the plastic on the board
-        items = [g for g in fp.GraphicalItems() if g.GetLayer() == pcbnew.F_Fab and g.GetClass() != 'PCB_TEXT'] or \
-                [g for g in fp.GraphicalItems() if g.GetLayer() == pcbnew.F_SilkS and g.GetClass() != 'PCB_TEXT']
-        return bbox_of(items)
-    def top_pads(fp):                           # what a top-face part can touch: top copper, incl. J1's shell legs
-        return [p for p in fp.Pads() if p.GetNumber() and p.IsOnLayer(pcbnew.F_Cu)]
-    pads_bb = {r: bbox_of(top_pads(fp)) for r, fp in fps.items()}
-    bodies = {r: body(fp) for r, fp in fps.items()}
-    refs = sorted(fps)
     issues = 0
-    for i, a in enumerate(refs):
-        for bref in refs[i + 1:]:
-            if pads_bb[a] and pads_bb[bref] and overlap(pads_bb[a], pads_bb[bref], PAD_CLEAR):
-                gap = min((rect_gap(p, q) for p in top_pads(fps[a]) for q in top_pads(fps[bref])   # pad by pad, not group bbox;
-                           if not (p.GetNetname() and p.GetNetname() == q.GetNetname())), default=9)  # same net may touch
-                if gap < PAD_CLEAR:
-                    issues += 1; print(f'  PAD SPACING {gap:.2f} < {PAD_CLEAR}: {a} vs {bref}')
-            for x, y in ((a, bref), (bref, a)):           # pad by pad: J1's legs sit at the board's four corners
-                if bodies[y] and x not in ('J3', 'J4', 'J2') and any(overlap(bbox_of([q]), bodies[y], 0.1) for q in top_pads(fps[x])):
-                    issues += 1; print(f'  PADS UNDER BODY: {x} under {y}')
-    for i, a in enumerate(refs):                # courtyards (KiCad parts; EasyEDA ones are body-only, still checked)
-        for bref in refs[i + 1:]:
-            ca, cb = fps[a].GetCourtyard(pcbnew.F_CrtYd), fps[bref].GetCourtyard(pcbnew.F_CrtYd)
-            if ca.OutlineCount() and cb.OutlineCount() and ca.Collide(cb):
-                issues += 1; print(f'  COURTYARDS OVERLAP: {a} vs {bref}')
+    refs = sorted(fps)
+    for side, cu, fab, silk, crt in (('top', pcbnew.F_Cu, pcbnew.F_Fab, pcbnew.F_SilkS, pcbnew.F_CrtYd),
+                                     ('bottom', pcbnew.B_Cu, pcbnew.B_Fab, pcbnew.B_SilkS, pcbnew.B_CrtYd)):
+        def body(fp):                           # Fab outline (silk if the part has none): the plastic on the board
+            items = [g for g in fp.GraphicalItems() if g.GetLayer() == fab and g.GetClass() != 'PCB_TEXT'] or \
+                    [g for g in fp.GraphicalItems() if g.GetLayer() == silk and g.GetClass() != 'PCB_TEXT']
+            return bbox_of(items)
+        def side_pads(fp):                      # what a part on this face can touch: this face's copper, incl. THT
+            return [p for p in fp.Pads() if p.GetNumber() and p.IsOnLayer(cu)]
+        pads_bb = {r: bbox_of(side_pads(fp)) for r, fp in fps.items()}
+        bodies = {r: body(fp) for r, fp in fps.items()}
+        for i, a in enumerate(refs):
+            for bref in refs[i + 1:]:
+                if pads_bb[a] and pads_bb[bref] and overlap(pads_bb[a], pads_bb[bref], PAD_CLEAR):
+                    gap = min((rect_gap(p, q) for p in side_pads(fps[a]) for q in side_pads(fps[bref])   # pad by pad;
+                               if not (p.GetNetname() and p.GetNetname() == q.GetNetname())), default=9)  # same net may touch
+                    if gap < PAD_CLEAR:
+                        issues += 1; print(f'  {side} PAD SPACING {gap:.2f} < {PAD_CLEAR}: {a} vs {bref}')
+                for x, y in ((a, bref), (bref, a)):
+                    if bodies[y] and x not in ('J3', 'J4', 'J2') and any(overlap(bbox_of([q]), bodies[y], 0.1) for q in side_pads(fps[x])):
+                        issues += 1; print(f'  {side} PADS UNDER BODY: {x} under {y}')
+                ca, cb = fps[a].GetCourtyard(crt), fps[bref].GetCourtyard(crt)
+                if ca.OutlineCount() and cb.OutlineCount() and ca.Collide(cb):
+                    issues += 1; print(f'  {side} COURTYARDS OVERLAP: {a} vs {bref}')
+    pads_bb = {r: bbox_of([p for p in fp.Pads() if p.GetNumber()]) for r, fp in fps.items()}
     # outline check: copper 0.5 mm inside the edge (house rule) (J2 and the jack noses overhang by design, their pads do not)
     for r, bb in pads_bb.items():
         if bb and r != 'J1' and (bb[1] < Y_TOP + 0.5 or bb[0] < -W / 2 + 0.5 or bb[2] > W / 2 - 0.5 or bb[3] > Y_BOT - 0.5):

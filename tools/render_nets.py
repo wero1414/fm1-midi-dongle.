@@ -3,7 +3,8 @@
 spanning tree per net, as KiCad's ratsnest), net names on the lines, part outlines and references.
 GND and +3V3 pads are marked instead of drawn: they reach the In1 / In2 planes through a via.
 
-Run: python3 tools/render_nets.py   ->  docs/pcb_nets.png
+Run: python3 tools/render_nets.py   ->  docs/pcb_nets_top.png, docs/pcb_nets_bottom.png (both seen from the top;
+each shows that face's parts in full and the other face's pads faded, so every ratsnest line has both ends)
 """
 import math, pathlib
 import pcbnew
@@ -22,9 +23,10 @@ COLORS = ['#1f77b4', '#ff7f0e', '#2ca02c', '#9467bd', '#8c564b', '#e377c2', '#17
           '#d6616b', '#ce6dbd', '#6baed6', '#fd8d3c']
 
 
-def main():
+def main(side):
     b = pcbnew.LoadBoard(str(HERE / 'fm1-midi-dongle.kicad_pcb'))
     fig, ax = plt.subplots(figsize=(11, 19), dpi=150)
+    on_side = (lambda fp: fp.IsFlipped()) if side == 'bottom' else (lambda fp: not fp.IsFlipped())
 
     for d in b.GetDrawings():                           # board outline
         if d.GetLayer() != pcbnew.Edge_Cuts:
@@ -50,17 +52,17 @@ def main():
         cy = fp.GetCourtyard(pcbnew.B_CrtYd if fp.IsFlipped() else pcbnew.F_CrtYd)
         bb = cy.BBox() if cy.OutlineCount() else fp.GetBoundingBox(False, False)
         x0, y0, x1, y1 = ToMM(bb.GetLeft()), ToMM(bb.GetTop()), ToMM(bb.GetRight()), ToMM(bb.GetBottom())
-        ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, fill=False, ec='#999999', lw=0.6, ls='--'))
-        if fp.IsFlipped():                                # back-face part: outline only, name at its bottom edge
-            ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, fill=False, ec='#1f4e9c', lw=1.0, ls=':'))
-            ax.text((x0 + x1) / 2, y1 + 0.15, f'{ref} {fp.GetValue()} (BOTTOM face)', ha='center', va='top',
-                    fontsize=6.5, color='#1f4e9c', weight='bold')
-        else:
+        mine = on_side(fp)
+        if mine:
+            ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, fill=False, ec='#777777', lw=0.7, ls='--'))
             ax.text((x0 + x1) / 2, y0 - 0.15, f'{ref} {fp.GetValue()}', ha='center', va='bottom', fontsize=6.5,
                     color='#222222', weight='bold')
+        else:                                             # other face: faint outline only
+            ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, fill=False, ec='#cccccc', lw=0.5, ls=':'))
         for p in fp.Pads():
             n = p.GetNetname()
-            back_only = p.IsOnLayer(pcbnew.B_Cu) and not p.IsOnLayer(pcbnew.F_Cu)
+            tht = p.IsOnLayer(pcbnew.B_Cu) and p.IsOnLayer(pcbnew.F_Cu)
+            back_only = not (mine or tht)                 # 'back' = the face not being shown
             pb = p.GetBoundingBox()
             px0, py0, px1, py1 = ToMM(pb.GetLeft()), ToMM(pb.GetTop()), ToMM(pb.GetRight()), ToMM(pb.GetBottom())
             if p.GetDrillSize().x > 0 and not p.GetNumber():
@@ -105,12 +107,13 @@ def main():
     ax.legend(handles=handles, loc='upper left', bbox_to_anchor=(1.01, 1), fontsize=8, frameon=False)
     ax.set_aspect('equal'); ax.invert_yaxis()
     ax.set_xlabel('mm'); ax.set_ylabel('mm'); ax.grid(True, lw=0.2, alpha=0.5)
-    ax.set_title('FM-1 MIDI dongle v5 placement, top view, ratsnest (unrouted)\n'
-                 'blue dotted = USB-A J1 on the back face (its signal pads faded, shell legs go through); black = holes', fontsize=10)
-    out = HERE / 'docs' / 'pcb_nets.png'
+    ax.set_title(f'FM-1 MIDI dongle v6 placement: {side.upper()} face parts (seen from the top), ratsnest\n'
+                 'faded = pads on the other face; black = holes', fontsize=10)
+    out = HERE / 'docs' / f'pcb_nets_{side}.png'
     fig.savefig(out, bbox_inches='tight')
     print('wrote', out)
 
 
 if __name__ == '__main__':
-    main()
+    for sd in ('top', 'bottom'):
+        main(sd)

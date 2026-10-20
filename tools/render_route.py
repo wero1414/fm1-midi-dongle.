@@ -97,7 +97,7 @@ def main():
         ax.grid(True, lw=0.2, alpha=0.4)
     handles = [plt.Line2D([], [], color=color[n], lw=3, label=n.lstrip('/')) for n in nets]
     fig.legend(handles=handles, loc='center right', fontsize=8, frameon=False)
-    fig.suptitle('FM-1 MIDI dongle v5 routing: pours shaded, tracks at true width, vias as rings '
+    fig.suptitle('FM-1 MIDI dongle v6 routing: pours shaded, tracks at true width, vias as rings '
                  '(In1 = GND plane, In2 = +3V3 plane)', fontsize=11)
     fig.subplots_adjust(right=0.86, wspace=0.08, top=0.95)
     out = HERE / 'docs' / 'pcb_route.png'

@@ -3,8 +3,8 @@ U1,1,CH32X035G8U6,RISC-V MCU with USB FS host; the TSSOP-20 F7P6 has NO host,QFN
 U2,1,XC6206P332MR,3.3 V LDO 200 mA,SOT-23-3,C5446,Basic,0.15,0.10,yes
 U3,1,SY6280AAC,Host VBUS load switch; Ilim = 6800/Rset,SOT-23-5,C55136,Extended,0.09,0.06,yes (LCSC + datasheet)
 U4,1,H11L1SM,MIDI IN optocoupler Schmitt output 3-16 V,SOP-6,C899473,Extended,0.68,0.33,yes
-U5,1,SN74LVC1G3157DCKR (TI),Hardware MIDI THRU: SPDT switch feeding the OUT jack tip. v5: S high = B2 = opto output (THRU default via R13 pull-up); S low = B1 = MCU TX. Ron <= 25 ohm at 3 V,SC-70-6,C38663,Extended,0.075,0.048,2026-10-19: pinout + function table from TI SCES424O; price/stock 227k from the JLC parts DB snapshot (not re-fetched live)
-J1,1,USB-A receptacle Jing Extension 911-321B2028S10100,v5 host port for any class-compliant USB-MIDI synth; mounted on the BOTTOM face. 4 SMD signal pads + 4 through-hole shell legs (stick ~0.65 mm out of the 0.8 mm board),SMD + THT legs,C42474,Extended,0.058,0.037,2026-10-20: dimensions/pad layout from the datasheet drawing; footprint+3D from EasyEDA (3D offset corrected 3.74 mm); price/stock 17.7k from the JLC parts DB snapshot (not re-fetched live)
+U5,1,SN74LVC1G3157DCKR (TI),Hardware MIDI THRU: SPDT switch feeding the OUT jack tip. v6: S low = B1 = opto output (THRU default via R13 pull-down); S high = B2 = MCU TX. Ron <= 25 ohm at 3 V,SC-70-6,C38663,Extended,0.075,0.048,2026-10-19: pinout + function table from TI SCES424O; price/stock 227k from the JLC parts DB snapshot (not re-fetched live)
+J1,1,USB-A receptacle Jing Extension 911-321B2028S10100,host port for any class-compliant USB-MIDI synth; v6: mounted on the TOP face. 4 SMD signal pads + 4 through-hole shell legs (stick ~0.65 mm out of the 0.8 mm board),SMD + THT legs,C42474,Extended,0.058,0.037,2026-10-20: dimensions/pad layout from the datasheet drawing; footprint+3D from EasyEDA (3D offset corrected 3.74 mm); price/stock 17.7k from the JLC parts DB snapshot (not re-fetched live)
 J2,1,USB-C female TYPE-C-31-M-12,5 V power in only,SMD 16P,C165948,Extended,0.17,0.10,yes
 J3,1,PJ-320D (USAKRO),MIDI OUT 3.5 mm 4-pole SMD jack: 1 sleeve 2 ring2 3 ring1 4 tip; EasyEDA footprint; Economic assembly,SMD,C521460,Extended,0.11,0.066,verified 2026-10-17 (datasheet + KiCad PJ320D cross-check)
 J4,1,PJ-320D (USAKRO),MIDI IN 3.5 mm 4-pole SMD jack (sleeve pins open),SMD,C521460,Extended,0.11,0.066,verified 2026-10-17
@@ -20,5 +20,5 @@ D2,1,LED red,status,0603,C2286,Basic,,,2026-10-18: C72043 (green) out of stock; 
 "C4,C5",2,Capacitor,100 nF 50 V X7R (U1 VDD / U4 VCC),0603,C14663,Basic,,,verified 2026-10-17
 "C1,C2",2,Capacitor,1 µF 50 V X5R (LDO in / LDO out),0603,C15849,Basic,,,verified 2026-10-17 (page showed out of stock; re-check)
 C3,1,Capacitor,10 µF 25 V X5R (VBUS_HOST bulk: a hot-plugged synth charges this instead of pulling the 5 V input down),0603,C96446,Basic,,,2026-10-20: Basic + 4.8M stock in the JLC parts DB snapshot (not re-fetched live)
-"R12,R13",2,Resistor,100k (R12: U3 EN pull-down, VBUS off until firmware enables; R13: OUT_SEL pull-UP (v5), hardware THRU until firmware drives PB9 low),0603,C25803,Basic,,,verified 2026-10-17
+"R12,R13",2,Resistor,100k (R12: U3 EN pull-down, VBUS off until firmware enables; R13: OUT_SEL pull-down (v6), hardware THRU until firmware drives PB9 high),0603,C25803,Basic,,,verified 2026-10-17
 "TP1,TP2,TP3",3,Pad,SDI programming pads 1.5 mm (3V3 / DIO / GND) for WCH-LinkE wires,bare copper,none,,0,0,no part
