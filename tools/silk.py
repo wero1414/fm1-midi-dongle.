@@ -5,7 +5,7 @@ The library silk (EasyEDA and KiCad styles mixed, lines off the edge and on the 
 replaced by one consistent set, sized for JLCPCB's standard legend (line >= 0.153 mm, text >= 1.0 mm high,
 >= 0.15 mm from pads):
   - part outlines from the body (EasyEDA courtyard = body, KiCad F.Fab), clipped 0.2 mm from mask openings and
-    holes and 0.3 mm inside the board edge; none on the plug (it is off the board) or on R/C (designator only)
+    holes and 0.3 mm inside the board edge; none on J1 (USB-A, back face) or on R/C (designator only)
   - pin-1 dot on the ICs, cathode bracket on D1/D2
   - every designator visible, 1.0 x 1.0 mm, placed next to its part where it hits no pad, body, edge or text;
     test pads get their signal name instead
@@ -28,7 +28,7 @@ REF_H = 0.8                   # designators: owner's choice, below JLC's 1.0 mm 
 PAD_GAP = 0.2            # silk to mask opening (JLC removes silk closer than 0.15)
 EDGE_GAP = 0.3           # silk to board edge
 LABELS = {'TP1': '3V3', 'TP2': 'DIO', 'TP3': 'GND'}
-REV = 'v4 2026-10'
+REV = 'v5 2026-10'
 EASYEDA_BODY = ('U1', 'U2', 'U3', 'U4', 'J3', 'J4')   # their courtyard is the body outline
 INSIDE_OK = ('U4',)            # outline big enough to carry its designator inside when nothing fits outside
 SILK_LAYERS = ('"F.SilkS"', '"B.SilkS"')
@@ -262,8 +262,8 @@ def main():
             tb = text_box(t)
             w, h = tb[2] - tb[0], tb[3] - tb[1]
             ox, oy = (tb[0] + tb[2]) / 2, (tb[1] + tb[3]) / 2
-            for d in (0.1, 0.2, 0.35, 0.5, 0.8, 1.1, 1.5, 2.0, 2.5):
-                for s in [i * 0.1 for i in range(-30, 31)]:
+            for d in (0.1, 0.2, 0.35, 0.5, 0.8, 1.1, 1.5, 2.0, 2.5, 3.0):
+                for s in [i * 0.1 for i in range(-40, 41)]:
                     for x, y in ((cx + s, anchor[1] - d - h / 2), (cx + s, anchor[3] + d + h / 2),
                                  (anchor[0] - d - w / 2, cy + s), (anchor[2] + d + w / 2, cy + s)):
                         r = (x - w / 2, y - h / 2, x + w / 2, y + h / 2)
@@ -331,7 +331,7 @@ def main():
             b.Add(t)
         placed.append(r)
 
-    # ---- back side: free except the plug's B row; text mirrored so it reads from the back
+    # ---- back side: J1 (USB-A) covers the top 10 mm; texts below it, mirrored so they read from the back
     def back_text(s, x, y, h=TEXT_H, rot=0):
         t = pcbnew.PCB_TEXT(b); t.SetText(s); t.SetLayer(pcbnew.B_SilkS); t.SetMirrored(True)
         t.SetTextSize(pcbnew.VECTOR2I(FromMM(h), FromMM(h))); t.SetTextThickness(FromMM(max(TEXT_W, h / 7)))
@@ -346,9 +346,10 @@ def main():
     back_text('MIDI OUT', j3x, 29.0, 1.2)
     back_text('MIDI IN', j4x, 29.0, 1.2)
     back_text('TRS type A', 0.0, 31.6, 1.0)
-    back_text('FM-1 MIDI', 4.3, 8.5, 1.3)
-    back_text('dongle', 4.3, 10.5, 1.3)
-    back_text(REV, 4.3, 12.4, 1.0)
+    back_text('USB HOST', 0.0, 10.0, 1.0)
+    back_text('FM-1 MIDI', 4.3, 13.0, 1.3)
+    back_text('dongle', 4.3, 15.0, 1.3)
+    back_text(REV, 4.3, 16.9, 1.0)
     j2 = r4(fps['J2'].GetBoundingBox(False, False))
     back_text('5V IN', -7.6, (j2[1] + j2[3]) / 2, 1.0, 90)
 

@@ -1,4 +1,4 @@
-# FM-1 MIDI dongle: USB host to TRS MIDI (locked 2026-10-17)
+# FM-1 MIDI dongle: USB host to TRS MIDI (locked 2026-10-17; v5 USB-A host port 2026-10-20, see the end)
 
 A stick that plugs into the M-VAVE FM-1's USB-C port (left side) and gives it a TRS MIDI OUT and a
 TRS MIDI IN. The FM-1 is a USB MIDI device, so the stick is a USB host. It works with any FM-1 firmware
@@ -17,9 +17,9 @@ that sends MIDI over USB (Melodee, SLOOP, Felucca, Hortator, stock).
  J2 USB-C F (5 V in) --VBUS--> U3 SY6280 (1 A limit, EN from MCU) --VBUS--> J1 USB-C male --> FM-1
                       \--> U2 XC6206 3.3 V --> U1 CH32X035G8U6
  U1 PC16/UDM (pin 26), PC17/UDP (pin 27) <--> J1 D-, D+        (host side: 15k pull-downs, see R5 R6)
- U1 PB10/TX1 (pin 21) --> U5 B2 \
- U4 out (MIDI_RX)     --> U5 B1  > U5 A --10 Ω--> J3 tip ; 3V3 --33 Ω--> J3 ring ; sleeve GND   MIDI OUT / THRU, type A
- U1 PB9 (pin 20)      --> U5 S  /  (100k R13 to GND: S low = B1 = hardware THRU by default)
+ U1 PB10/TX1 (pin 21) --> U5 B1 \
+ U4 out (MIDI_RX)     --> U5 B2  > U5 A --10 Ω--> J3 tip ; 3V3 --33 Ω--> J3 ring ; sleeve GND   MIDI OUT / THRU, type A
+ U1 PB9 (pin 20)      --> U5 S  /  (v5: 100k R13 to 3V3: S high = B2 = hardware THRU by default)
  J4 tip/ring --220 Ω--> U4 H11L1SM LED (D1 reverse) ; U4 out --pull-up--> U1 PB11/RX1 (pin 22)   MIDI IN
  U1 PC18/DIO (pin 25) + GND + 3V3 --> 3-pin SDI header/pads for WCH-LinkE
  U1 VDD pin 2, GND = exposed pad (pin "0" in the datasheet diagram)
@@ -66,8 +66,9 @@ Free for EN / LED: PA0..PA7 (pins 3..11 area), PB0, PB3, PC0, PC3 - pick during 
   composite device (audio + MIDI), skip the audio interfaces; take bulk IN and bulk OUT.
 - Loop: poll bulk IN, unpack 4-byte USB-MIDI event packets to serial bytes on USART1 at 31250 baud;
   parse USART1 RX (running status) into USB-MIDI packets on bulk OUT.
-- PB9 (OUT_SEL) push-pull: high = MIDI OUT jack carries the FM-1's USB MIDI (U5 B2 = TX), low = hardware THRU
-  (U5 B1 = opto output). R13 holds it low through reset, so a blank or crashed MCU still passes MIDI IN to OUT.
+- PB9 (OUT_SEL) push-pull. v5 (inverted against v4): LOW = MIDI OUT jack carries the MCU's MIDI (U5 B1 = TX),
+  HIGH = hardware THRU (U5 B2 = opto output). R13 pulls it HIGH through reset, so a blank or crashed MCU still passes
+  MIDI IN to OUT.
   How the user switches modes (a SysEx, a long press, a saved setting) is a firmware decision.
 - Re-enumerate on detach. Enable U3 only after power is stable; LED = connected.
 - Toolchain: MounRiver Studio or riscv-none-elf-gcc; flash with WCH-LinkE.
@@ -208,3 +209,63 @@ by an MCU pin.
   under the RX trunk. TP3 (GND LinkE pad) moved to the free pocket between J2, R9 and the jacks, labelled GND.
 - Checks after the change: ERC 0, DRC 0 unconnected and only the 6 accepted-pending J1 edge items,
   check_routing clean (0 any-angle), 0 loops, gen_pcb placement issues 0.
+
+## v5: USB-A host port on the bottom face (2026-10-20, owner asked for it)
+Why: a USB-A receptacle takes the cable every class-compliant synth/controller ships with (USB-A to B, micro-B
+or C), so the dongle works with more synths than the FM-1. The owner chose the bottom face so the PCB does not
+grow: the board is still 20 x 37.7 mm.
+
+- **J1 = Jing Extension 911-321B2028S10100, LCSC C42474** (owner's pick over the fully-SMD C8328): 10.0 mm deep,
+  6.9 mm tall, 4 SMD signal pads (2.00 / 7.00 mm pitch) and 4 through-hole shell legs (12.80 x 6.00 mm) that stick
+  ~0.65 mm out of the 0.8 mm board's top face. Footprint and 3D from EasyEDA; pads checked against the datasheet
+  drawing; the EasyEDA 3D model was 3.74 mm forward of the pads and is offset back in the footprint.
+- Mounted on B.Cu, mirrored top-to-bottom, mouth up: D+ (pad 3) left, D- (pad 2) right, same order as the MCU's
+  pins 27/26, so the pair does not cross. VBUS (pad 1) is on the right, GND (pad 4) on the left.
+- Shell front 0.8 mm past the top edge (keeps the front legs' copper 0.5 mm from the edge).
+- Netlist: plug, CC_FM1 and R1 (56k Rp) removed; VBUS_FM1 renamed VBUS_HOST; C3 now 10 uF 25 V (C96446, Basic)
+  as host-port bulk, so a hot-plugged synth does not brown out the 5 V input. USB 2.0 asks a downstream port for
+  120 uF; 10 uF is the usual small-host compromise (not verified against a USB-IF test).
+- Assembly: J1's SMD pads are on the bottom (bottom stencil) and its legs need through-hole soldering, so JLC
+  Standard PCBA stays (it was Standard already for the v4 plug).
+
+### Floorplan v5 (placement only, NOT routed)
+- Top band (y < 1.4) freed by the plug, between the front shell legs: U3 SY6280 at rotation 90 (EN / IN face the
+  left gap, OUT / ISET face right), R4 right of it, C3 standing up, TP2 (DIO). TP1 stays in the top-right corner.
+- VBUS_HOST plan: U3 OUT -> F.Cu at y ~0.4 under R4 -> C3 -> via -> B.Cu down to J1 VBUS (x 3.5).
+- USB plan: MCU pins 27/26 -> vias at (-/+0.75, 1.6) -> B.Cu lanes at x -1.2 / 0.9 inside J1's 1.4 mm pads.
+  The MCU's exposed-pad GND vias moved to two columns clear of both lanes.
+- Right column (x > 7.4, outside the right legs): TP1, R10, U5 (THRU switch).
+- (superseded by the routing pass below: U5, R10, R12, R13, C5, TP3 and the opto block moved again)
+- Checks: `tools/gen_pcb.py` 0 placement issues (layer-aware: top parts vs J1's legs only; legs as real slots);
+  KiCad DRC on the unrouted board: only silk-to-edge (library silk, regenerated by silk.py after routing) and the
+  4 unconnected EP vias. Routed afterwards, see "Routing v5".
+
+### Schematic v5
+- Power and ground are KiCad `power:` symbols (GND, +3V3, +5V as +5V_IN, VBUS as VBUS_HOST); signals stay labels.
+- No overlaps: gen_sch.py places reference/value outside each symbol and fails on any overlap of symbols,
+  labels, power ports and texts (check_overlaps). Clean symbols drawn for SY6280, SN74LVC1G3157, USB-A and PJ-320D.
+- ERC 0.
+
+### Routing v5 (2026-10-20, `tools/route.py`, hand-written polylines, no autorouter)
+The right rear shell leg of J1 left no room for the v4 THRU block, so the routing pass moved parts first:
+- U5 (THRU switch) now sits in a band under the MCU, made by moving the opto U4 down 2.1 mm (R9, D1 1.5 mm with it).
+  **U5 inputs swapped:** B2 (pin 1) = MIDI_RX straight above U4's output pin, B1 (pin 3) = MIDI_TX, and **R13 is now a
+  pull-UP** to 3V3. Hardware THRU is still the default (blank / reset MCU: OUT_SEL high = B2 = opto output); firmware
+  drives PB9 LOW to send its own MIDI. Same parts, same BOM.
+- R10 (RX pull-up) in the right column, R13 beside the MCU's pin 20, C5 in the U5 band (feeds U4 pin 6 and U5 VCC).
+- TP3 (GND LinkE pad) moved to the empty top-left corner: all three SDI pads (GND, DIO, 3V3) are on the top edge.
+- Lanes leave the MCU's top-right corner in a fixed order so nothing crosses: DIO (y 1.45, up into TP2), RX (y 1.85,
+  out to x 9.25, down the right edge into U4 pin 4, then up into U5 B2), TX (y 2.25, down the corridor right of J1's
+  rear leg into U5 B1). OUT_SEL drops to B.Cu at R13 and comes up beside U5's S pin. U5's A output goes to B.Cu and
+  runs down the right edge, then along y 21.45 to R7, as in v4.
+- USB: pins 27/26 -> vias at (-1.0, 1.6) / (-0.25, 1.0) -> B.Cu straight down into J1's D+/D- pads (lanes x -1.0 and
+  0.8, clear of the MCU's exposed-pad vias). VBUS_HOST: U3 OUT -> F.Cu (0.5 mm) under R4 -> C3 -> via -> B.Cu -> J1 VBUS.
+- +5V_IN as a B.Cu pour on the power side (as v4); In1 GND and In2 3V3 planes; GND pours on F.Cu and B.Cu.
+- J1's four shell legs and D2 pin 1 are solid-connected to the pour (one-spoke pockets between lanes).
+- Checks: KiCad DRC 0 unconnected, 0 clearance / short items. One `track_width` item: the 0.2 mm neck where +3V3
+  leaves the MCU's VDD pin (0.4 mm pin pitch; 0.3 mm from 0.55 mm out). `check_routing.py` clean (87.5 % orthogonal,
+  12.5 % short 45 deg, 0 any-angle, no 90 deg corners). `check_loops.py`: 0 loops on every net. 22 text_height
+  warnings are the 0.8 mm designators (owner's choice). Schematic parity shows only the generator's known
+  footprint-library / field / net-name items.
+- Silkscreen: 19 designators + 3 SDI labels on silk; D1, R11, R7, C2, R4, J3 only on F.Fab (no room at 0.8 mm).
+- The J1 GND-pad copper-edge items from v4 are gone with the plug.

@@ -1,19 +1,19 @@
 (kicad_symbol_lib (version 20241209) (generator "gen_sch") (generator_version "9.0")
 	(symbol "SY6280AAC" (pin_names (offset 1.016)) (exclude_from_sim no) (in_bom yes) (on_board yes)
-		(property "Reference" "U" (at -5.08 6.35 0) (effects (font (size 1.27 1.27)) (justify left)))
-		(property "Value" "SY6280AAC" (at -5.08 -7.62 0) (effects (font (size 1.27 1.27)) (justify left)))
+		(property "Reference" "U" (at -7.62 6.35 0) (effects (font (size 1.27 1.27)) (justify left)))
+		(property "Value" "SY6280AAC" (at -7.62 -7.62 0) (effects (font (size 1.27 1.27)) (justify left)))
 		(property "Footprint" "Package_TO_SOT_SMD:SOT-23-5" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Datasheet" "https://olimex.com/Products/Components/IC/SY6280/resources/SY6280AAC.PDF" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
 		(property "Description" "Silergy load switch, 2 A, programmable current limit Ilim=6800/Rset" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
 		(symbol "SY6280AAC_0_1"
-			(rectangle (start -5.08 5.08) (end 5.08 -5.08) (stroke (width 0.254) (type default)) (fill (type background)))
+			(rectangle (start -7.62 5.08) (end 7.62 -5.08) (stroke (width 0.254) (type default)) (fill (type background)))
 		)
 		(symbol "SY6280AAC_1_1"
-			(pin power_out line (at 7.62 2.54 180) (length 2.54) (name "OUT" (effects (font (size 1.27 1.27)))) (number "1" (effects (font (size 1.27 1.27)))))
+			(pin power_out line (at 10.16 2.54 180) (length 2.54) (name "OUT" (effects (font (size 1.27 1.27)))) (number "1" (effects (font (size 1.27 1.27)))))
 			(pin power_in line (at 0 -7.62 90) (length 2.54) (name "GND" (effects (font (size 1.27 1.27)))) (number "2" (effects (font (size 1.27 1.27)))))
-			(pin passive line (at 7.62 -2.54 180) (length 2.54) (name "ISET" (effects (font (size 1.27 1.27)))) (number "3" (effects (font (size 1.27 1.27)))))
-			(pin input line (at -7.62 -2.54 0) (length 2.54) (name "EN" (effects (font (size 1.27 1.27)))) (number "4" (effects (font (size 1.27 1.27)))))
-			(pin power_in line (at -7.62 2.54 0) (length 2.54) (name "IN" (effects (font (size 1.27 1.27)))) (number "5" (effects (font (size 1.27 1.27)))))
+			(pin passive line (at 10.16 -2.54 180) (length 2.54) (name "ISET" (effects (font (size 1.27 1.27)))) (number "3" (effects (font (size 1.27 1.27)))))
+			(pin input line (at -10.16 -2.54 0) (length 2.54) (name "EN" (effects (font (size 1.27 1.27)))) (number "4" (effects (font (size 1.27 1.27)))))
+			(pin power_in line (at -10.16 2.54 0) (length 2.54) (name "IN" (effects (font (size 1.27 1.27)))) (number "5" (effects (font (size 1.27 1.27)))))
 		)
 	)
 	(symbol "SN74LVC1G3157" (pin_names (offset 1.016)) (exclude_from_sim no) (in_bom yes) (on_board yes)
@@ -34,354 +34,41 @@
 			(pin input line (at -7.62 -5.08 0) (length 2.54) (name "S" (effects (font (size 1.27 1.27)))) (number "6" (effects (font (size 1.27 1.27)))))
 		)
 	)
-	  (symbol "USB-C_Plug_GTJB040"
-    (in_bom yes)
-    (on_board yes)
-    (property
-      "Reference"
-      "U"
-      (id 0)
-      (at 0 24.13 0)
-      (effects (font (size 1.27 1.27) ) )
-    )
-    (property
-      "Value"
-      "TYPE-C 24P-GTJB 040"
-      (id 1)
-      (at 0 -24.13 0)
-      (effects (font (size 1.27 1.27) ) )
-    )
-    (property
-      "Footprint"
-      "fm1_dongle:USB-C-SMD_TYPE-C-24P-GTJB-040"
-      (id 2)
-      (at 0 -26.67 0)
-      (effects (font (size 1.27 1.27) ) hide)
-    )
-    (property
-      "Datasheet"
-      "https://www.lcsc.com/datasheet/C3151751.pdf"
-      (id 3)
-      (at 0 -29.21 0)
-      (effects (font (size 1.27 1.27) ) hide)
-    )
-    (property
-      "Manufacturer"
-      "SHOU HAN(首韩)"
-      (id 4)
-      (at 0 -31.75 0)
-      (effects (font (size 1.27 1.27) ) hide)
-    )
-    (property
-      "MPN"
-      "TYPE-C 24P-GTJB 040"
-      (id 5)
-      (at 0 -34.29 0)
-      (effects (font (size 1.27 1.27) ) hide)
-    )
-    (property
-      "LCSC Part"
-      "C3151751"
-      (id 6)
-      (at 0 -36.83 0)
-      (effects (font (size 1.27 1.27) ) hide)
-    )
-    (property
-      "ki_keywords"
-      "USB Connectors"
-      (id 8)
-      (at 0 -39.37 0)
-      (effects (font (size 1.27 1.27) ) hide)
-    )
-    (symbol "USB-C_Plug_GTJB040_0_1"
-      (rectangle
-        (start -11.43 16.51)
-        (end 11.43 -16.51)
-        (stroke (width 0) (type default))
-        (fill (type background))
-      )
-      (circle
-        (center -10.16 15.24)
-        (radius 0.38)
-        (stroke (width 0) (type default))
-        (fill (type none))
-      )
-      (pin passive line
-        (at -13.97 13.97 0)
-        (length 2.54)
-        (name "GND" (effects (font (size 1.27 1.27))))
-        (number "A12" (effects (font (size 1.27 1.27))))
-      )
-      (pin passive line
-        (at -13.97 11.43 0)
-        (length 2.54)
-        (name "SSRXp2" (effects (font (size 1.27 1.27))))
-        (number "A11" (effects (font (size 1.27 1.27))))
-      )
-      (pin passive line
-        (at -13.97 8.89 0)
-        (length 2.54)
-        (name "SSRXn2" (effects (font (size 1.27 1.27))))
-        (number "A10" (effects (font (size 1.27 1.27))))
-      )
-      (pin passive line
-        (at -13.97 6.35 0)
-        (length 2.54)
-        (name "VBUS" (effects (font (size 1.27 1.27))))
-        (number "A9" (effects (font (size 1.27 1.27))))
-      )
-      (pin passive line
-        (at -13.97 3.81 0)
-        (length 2.54)
-        (name "SBU1" (effects (font (size 1.27 1.27))))
-        (number "A8" (effects (font (size 1.27 1.27))))
-      )
-      (pin passive line
-        (at -13.97 1.27 0)
-        (length 2.54)
-        (name "DN1" (effects (font (size 1.27 1.27))))
-        (number "A7" (effects (font (size 1.27 1.27))))
-      )
-      (pin passive line
-        (at -13.97 -1.27 0)
-        (length 2.54)
-        (name "DP1" (effects (font (size 1.27 1.27))))
-        (number "A6" (effects (font (size 1.27 1.27))))
-      )
-      (pin passive line
-        (at -13.97 -3.81 0)
-        (length 2.54)
-        (name "CC1" (effects (font (size 1.27 1.27))))
-        (number "A5" (effects (font (size 1.27 1.27))))
-      )
-      (pin passive line
-        (at -13.97 -6.35 0)
-        (length 2.54)
-        (name "VBUS" (effects (font (size 1.27 1.27))))
-        (number "A4" (effects (font (size 1.27 1.27))))
-      )
-      (pin passive line
-        (at -13.97 -8.89 0)
-        (length 2.54)
-        (name "SSTXn1" (effects (font (size 1.27 1.27))))
-        (number "A3" (effects (font (size 1.27 1.27))))
-      )
-      (pin passive line
-        (at -13.97 -11.43 0)
-        (length 2.54)
-        (name "SSTXP1" (effects (font (size 1.27 1.27))))
-        (number "A2" (effects (font (size 1.27 1.27))))
-      )
-      (pin passive line
-        (at -13.97 -13.97 0)
-        (length 2.54)
-        (name "GND" (effects (font (size 1.27 1.27))))
-        (number "A1" (effects (font (size 1.27 1.27))))
-      )
-      (pin passive line
-        (at 13.97 -13.97 180)
-        (length 2.54)
-        (name "GND" (effects (font (size 1.27 1.27))))
-        (number "B12" (effects (font (size 1.27 1.27))))
-      )
-      (pin passive line
-        (at 13.97 -11.43 180)
-        (length 2.54)
-        (name "SSRXp1" (effects (font (size 1.27 1.27))))
-        (number "B11" (effects (font (size 1.27 1.27))))
-      )
-      (pin passive line
-        (at 13.97 -8.89 180)
-        (length 2.54)
-        (name "SSRXn1" (effects (font (size 1.27 1.27))))
-        (number "B10" (effects (font (size 1.27 1.27))))
-      )
-      (pin passive line
-        (at 13.97 -6.35 180)
-        (length 2.54)
-        (name "VBUS" (effects (font (size 1.27 1.27))))
-        (number "B9" (effects (font (size 1.27 1.27))))
-      )
-      (pin passive line
-        (at 13.97 -3.81 180)
-        (length 2.54)
-        (name "SBU2" (effects (font (size 1.27 1.27))))
-        (number "B8" (effects (font (size 1.27 1.27))))
-      )
-      (pin passive line
-        (at 13.97 -1.27 180)
-        (length 2.54)
-        (name "DN2" (effects (font (size 1.27 1.27))))
-        (number "B7" (effects (font (size 1.27 1.27))))
-      )
-      (pin passive line
-        (at 13.97 1.27 180)
-        (length 2.54)
-        (name "DP2" (effects (font (size 1.27 1.27))))
-        (number "B6" (effects (font (size 1.27 1.27))))
-      )
-      (pin passive line
-        (at 13.97 3.81 180)
-        (length 2.54)
-        (name "CC2" (effects (font (size 1.27 1.27))))
-        (number "B5" (effects (font (size 1.27 1.27))))
-      )
-      (pin passive line
-        (at 13.97 6.35 180)
-        (length 2.54)
-        (name "VBUS" (effects (font (size 1.27 1.27))))
-        (number "B4" (effects (font (size 1.27 1.27))))
-      )
-      (pin passive line
-        (at 13.97 8.89 180)
-        (length 2.54)
-        (name "SSTXn2" (effects (font (size 1.27 1.27))))
-        (number "B3" (effects (font (size 1.27 1.27))))
-      )
-      (pin passive line
-        (at 13.97 11.43 180)
-        (length 2.54)
-        (name "SSTXp2" (effects (font (size 1.27 1.27))))
-        (number "B2" (effects (font (size 1.27 1.27))))
-      )
-      (pin passive line
-        (at 13.97 13.97 180)
-        (length 2.54)
-        (name "GND" (effects (font (size 1.27 1.27))))
-        (number "B1" (effects (font (size 1.27 1.27))))
-      )
-      (pin passive line
-        (at 0.00 19.05 270)
-        (length 2.54)
-        (name "GND" (effects (font (size 1.27 1.27))))
-        (number "25" (effects (font (size 1.27 1.27))))
-      )
-      (pin passive line
-        (at 0.00 -19.05 90)
-        (length 2.54)
-        (name "GND" (effects (font (size 1.27 1.27))))
-        (number "26" (effects (font (size 1.27 1.27))))
-      )
-    )
-  )
-	  (symbol "PJ-320D"
-    (in_bom yes)
-    (on_board yes)
-    (property
-      "Reference"
-      "CN"
-      (id 0)
-      (at 0 7.62 0)
-      (effects (font (size 1.27 1.27) ) )
-    )
-    (property
-      "Value"
-      "PJ-320D_C521460"
-      (id 1)
-      (at 0 -10.16 0)
-      (effects (font (size 1.27 1.27) ) )
-    )
-    (property
-      "Footprint"
-      "jlc2:AUDIO-SMD_PJ-320D"
-      (id 2)
-      (at 0 -12.70 0)
-      (effects (font (size 1.27 1.27) ) hide)
-    )
-    (property
-      "Datasheet"
-      "https://lcsc.com/product-detail/Audio-Video-Connectors_USAKRO-PJ-320D_C521460.html"
-      (id 3)
-      (at 0 -15.24 0)
-      (effects (font (size 1.27 1.27) ) hide)
-    )
-    (property
-      "Manufacturer"
-      "USAKRO(美韩)"
-      (id 4)
-      (at 0 -17.78 0)
-      (effects (font (size 1.27 1.27) ) hide)
-    )
-    (property
-      "MPN"
-      "PJ-320D"
-      (id 5)
-      (at 0 -20.32 0)
-      (effects (font (size 1.27 1.27) ) hide)
-    )
-    (property
-      "LCSC Part"
-      "C521460"
-      (id 6)
-      (at 0 -22.86 0)
-      (effects (font (size 1.27 1.27) ) hide)
-    )
-    (property
-      "ki_keywords"
-      "Audio Connectors"
-      (id 8)
-      (at 0 -25.40 0)
-      (effects (font (size 1.27 1.27) ) hide)
-    )
-    (symbol "PJ-320D_0_1"
-      (rectangle
-        (start -8.38 -0.00)
-        (end -6.86 -4.57)
-        (stroke (width 0) (type default))
-        (fill (type background))
-      )
-      (polyline
-        (pts
-          (xy 2.54 2.54) (xy -7.62 2.54) (xy -7.62 -0.00)
-        )
-        (stroke (width 0) (type default))
-        (fill (type none))
-      )
-      (polyline
-        (pts
-          (xy 2.54 -0.00) (xy -4.83 -0.00) (xy -5.33 -1.02) (xy -5.84 -0.00)
-        )
-        (stroke (width 0) (type default))
-        (fill (type none))
-      )
-      (polyline
-        (pts
-          (xy 2.54 -2.54) (xy -2.03 -2.54) (xy -2.54 -1.52) (xy -3.05 -2.54)
-        )
-        (stroke (width 0) (type default))
-        (fill (type none))
-      )
-      (polyline
-        (pts
-          (xy 2.54 -5.08) (xy -3.30 -5.08) (xy -3.81 -4.06) (xy -4.32 -5.08)
-        )
-        (stroke (width 0) (type default))
-        (fill (type none))
-      )
-      (pin passive line
-        (at 7.62 2.54 180)
-        (length 5.08)
-        (name "1" (effects (font (size 1.27 1.27))))
-        (number "1" (effects (font (size 1.27 1.27))))
-      )
-      (pin passive line
-        (at 7.62 -0.00 180)
-        (length 5.08)
-        (name "3" (effects (font (size 1.27 1.27))))
-        (number "3" (effects (font (size 1.27 1.27))))
-      )
-      (pin passive line
-        (at 7.62 -5.08 180)
-        (length 5.08)
-        (name "2" (effects (font (size 1.27 1.27))))
-        (number "2" (effects (font (size 1.27 1.27))))
-      )
-      (pin passive line
-        (at 7.62 -2.54 180)
-        (length 5.08)
-        (name "4" (effects (font (size 1.27 1.27))))
-        (number "4" (effects (font (size 1.27 1.27))))
-      )
-    )
-  )
+	(symbol "USB_A_911-321B2028S10100" (pin_names (offset 1.016)) (exclude_from_sim no) (in_bom yes) (on_board yes)
+		(property "Reference" "J" (at -5.08 6.35 0) (effects (font (size 1.27 1.27)) (justify left)))
+		(property "Value" "USB-A" (at -5.08 -11.43 0) (effects (font (size 1.27 1.27)) (justify left)))
+		(property "Footprint" "fm1_dongle:USB-A-SMD_911-321B2028S10100" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Datasheet" "https://jlcpcb.com/partdetail/C42474" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Description" "USB 2.0 type-A receptacle, SMD signal pins, through-hole shell legs" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		(symbol "USB_A_911-321B2028S10100_0_1"
+			(rectangle (start -7.62 5.08) (end 7.62 -7.62) (stroke (width 0.254) (type default)) (fill (type background)))
+		)
+		(symbol "USB_A_911-321B2028S10100_1_1"
+			(pin passive line (at -10.16 2.54 0) (length 2.54) (name "VBUS" (effects (font (size 1.27 1.27)))) (number "1" (effects (font (size 1.27 1.27)))))
+			(pin passive line (at -10.16 -2.54 0) (length 2.54) (name "D-" (effects (font (size 1.27 1.27)))) (number "2" (effects (font (size 1.27 1.27)))))
+			(pin passive line (at -10.16 0 0) (length 2.54) (name "D+" (effects (font (size 1.27 1.27)))) (number "3" (effects (font (size 1.27 1.27)))))
+			(pin passive line (at -2.54 -10.16 90) (length 2.54) (name "GND" (effects (font (size 1.27 1.27)))) (number "4" (effects (font (size 1.27 1.27)))))
+			(pin passive line (at 2.54 -10.16 90) (length 2.54) (name "SH" (effects (font (size 1.27 1.27)))) (number "5" (effects (font (size 1.27 1.27)))))
+			(pin passive line (at 2.54 -10.16 90) (length 2.54) hide (name "SH" (effects (font (size 1.27 1.27)))) (number "6" (effects (font (size 1.27 1.27)))))
+			(pin passive line (at 2.54 -10.16 90) (length 2.54) hide (name "SH" (effects (font (size 1.27 1.27)))) (number "7" (effects (font (size 1.27 1.27)))))
+			(pin passive line (at 2.54 -10.16 90) (length 2.54) hide (name "SH" (effects (font (size 1.27 1.27)))) (number "8" (effects (font (size 1.27 1.27)))))
+		)
+	)
+	(symbol "PJ-320D" (pin_names (offset 1.016)) (exclude_from_sim no) (in_bom yes) (on_board yes)
+		(property "Reference" "J" (at -7.62 6.35 0) (effects (font (size 1.27 1.27)) (justify left)))
+		(property "Value" "PJ-320D" (at -7.62 -10.16 0) (effects (font (size 1.27 1.27)) (justify left)))
+		(property "Footprint" "fm1_dongle:AUDIO-SMD_PJ-320D" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Datasheet" "https://jlcpcb.com/partdetail/C521460" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		(property "Description" "3.5 mm 4-pole audio jack, SMD" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
+		(symbol "PJ-320D_0_1"
+			(rectangle (start -7.62 5.08) (end 2.54 -7.62) (stroke (width 0.254) (type default)) (fill (type background)))
+			(rectangle (start -6.604 1.27) (end -5.08 -3.81) (stroke (width 0.254) (type default)) (fill (type outline)))
+		)
+		(symbol "PJ-320D_1_1"
+			(pin passive line (at 5.08 2.54 180) (length 2.54) (name "TIP" (effects (font (size 1.27 1.27)))) (number "4" (effects (font (size 1.27 1.27)))))
+			(pin passive line (at 5.08 0 180) (length 2.54) (name "RING" (effects (font (size 1.27 1.27)))) (number "3" (effects (font (size 1.27 1.27)))))
+			(pin passive line (at 5.08 -2.54 180) (length 2.54) (name "R2" (effects (font (size 1.27 1.27)))) (number "2" (effects (font (size 1.27 1.27)))))
+			(pin passive line (at 5.08 -5.08 180) (length 2.54) (name "SL" (effects (font (size 1.27 1.27)))) (number "1" (effects (font (size 1.27 1.27)))))
+		)
+	)
 )

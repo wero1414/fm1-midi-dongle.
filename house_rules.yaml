@@ -3,7 +3,7 @@
 # stackup, and the USB pair is a 2.6 mm full-speed (12 Mbps) run, so it gets a plain 0.2 mm width, no target.
 netclasses:
   - name: Power
-    patterns: ["/VBUS_FM1", "+*"]
+    patterns: ["VBUS_HOST", "+*"]
     track: 0.5
     via: [0.8, 0.4]
     clearance: 0.2

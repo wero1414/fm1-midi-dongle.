@@ -47,11 +47,15 @@ def main():
     nets = {}
     for fp in b.GetFootprints():
         ref = fp.GetReference()
-        cy = fp.GetCourtyard(pcbnew.F_CrtYd)
+        cy = fp.GetCourtyard(pcbnew.B_CrtYd if fp.IsFlipped() else pcbnew.F_CrtYd)
         bb = cy.BBox() if cy.OutlineCount() else fp.GetBoundingBox(False, False)
         x0, y0, x1, y1 = ToMM(bb.GetLeft()), ToMM(bb.GetTop()), ToMM(bb.GetRight()), ToMM(bb.GetBottom())
         ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, fill=False, ec='#999999', lw=0.6, ls='--'))
-        if ref != 'J1':
+        if fp.IsFlipped():                                # back-face part: outline only, name at its bottom edge
+            ax.add_patch(Rectangle((x0, y0), x1 - x0, y1 - y0, fill=False, ec='#1f4e9c', lw=1.0, ls=':'))
+            ax.text((x0 + x1) / 2, y1 + 0.15, f'{ref} {fp.GetValue()} (BOTTOM face)', ha='center', va='top',
+                    fontsize=6.5, color='#1f4e9c', weight='bold')
+        else:
             ax.text((x0 + x1) / 2, y0 - 0.15, f'{ref} {fp.GetValue()}', ha='center', va='bottom', fontsize=6.5,
                     color='#222222', weight='bold')
         for p in fp.Pads():
@@ -101,8 +105,8 @@ def main():
     ax.legend(handles=handles, loc='upper left', bbox_to_anchor=(1.01, 1), fontsize=8, frameon=False)
     ax.set_aspect('equal'); ax.invert_yaxis()
     ax.set_xlabel('mm'); ax.set_ylabel('mm'); ax.grid(True, lw=0.2, alpha=0.5)
-    ax.set_title('FM-1 MIDI dongle v4 placement, top view, ratsnest (unrouted)\n'
-                 'dotted/faded = plug B-row pads on the back face; black = holes', fontsize=10)
+    ax.set_title('FM-1 MIDI dongle v5 placement, top view, ratsnest (unrouted)\n'
+                 'blue dotted = USB-A J1 on the back face (its signal pads faded, shell legs go through); black = holes', fontsize=10)
     out = HERE / 'docs' / 'pcb_nets.png'
     fig.savefig(out, bbox_inches='tight')
     print('wrote', out)
