@@ -70,7 +70,10 @@ Free for EN / LED: PA0..PA7 (pins 3..11 area), PB0, PB3, PC0, PC3 - pick during 
   HIGH = hardware THRU (U5 B2 = opto output). R13 pulls it HIGH through reset, so a blank or crashed MCU still passes
   MIDI IN to OUT.
   How the user switches modes (a SysEx, a long press, a saved setting) is a firmware decision.
-- Re-enumerate on detach. Enable U3 only after power is stable; LED = connected.
+- PA0 (VBUS_EN, pin 5) push-pull HIGH to power the USB-A port, after clocks / LDO are stable and the USB host
+  is initialised. R12 (100k pull-down) keeps the port OFF through power-up, reset, flashing and on a blank MCU
+  (owner confirmed the default 2026-10-20). Drive it LOW to power-cycle a hung device or after an over-current.
+- Re-enumerate on detach. LED = connected.
 - Toolchain: MounRiver Studio or riscv-none-elf-gcc; flash with WCH-LinkE.
 
 ## Cost (fetched LCSC prices; PCB and passives estimated)
