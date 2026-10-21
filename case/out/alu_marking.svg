@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="22.8mm" height="40.97mm" viewBox="-11.4 -3.37 22.8 40.97">
+<rect x="-11.4" y="-3.37" width="22.8" height="40.97" rx="2.0" fill="none" stroke="#999" stroke-width="0.05"/>
+<circle cx="-8.6" cy="2.1" r="0.8" fill="none" stroke="#999" stroke-width="0.05"/>
+<text x="5.0" y="31.0" font-family="Noto Sans" font-weight="bold" font-size="2.99" text-anchor="middle" dominant-baseline="central">OUT</text>
+<text x="-5.0" y="31.0" font-family="Noto Sans" font-weight="bold" font-size="2.99" text-anchor="middle" dominant-baseline="central">IN</text>
+<text x="6.6" y="15.9" font-family="Noto Sans" font-weight="bold" font-size="2.99" text-anchor="middle" dominant-baseline="central">5V</text>
+<text x="0.0" y="4.0" font-family="Noto Sans" font-weight="bold" font-size="2.99" text-anchor="middle" dominant-baseline="central">USB</text>
+</svg>

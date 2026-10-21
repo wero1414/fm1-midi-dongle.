@@ -131,7 +131,7 @@ def main():
     PCB.write_text(text)
     b = pcbnew.LoadBoard(str(PCB))
     edge = Edge(b)
-    fps = {fp.GetReference(): fp for fp in b.GetFootprints()}
+    fps = {fp.GetReference(): fp for fp in b.GetFootprints() if not fp.IsBoardOnly()}      # board-only: case screw holes H1, H2
 
     # keepouts per silk side: mask openings and holes
     opens = {pcbnew.F_SilkS: [], pcbnew.B_SilkS: []}
@@ -253,6 +253,11 @@ def main():
     placed = {pcbnew.F_SilkS: [], pcbnew.B_SilkS: []}
     blocks = {k: [grow(o, -LINE / 2 - 0.05) for o in opens[k]] + [v for r, v in bodies.items() if v and SILK[r] == k]
               for k in opens}                   # text: JLC's 0.15 mm to pads; bodies of parts on that face
+    for fp in b.GetFootprints():                # case screw holes: keep text off the case bosses (r 1.4) on both faces
+        if fp.IsBoardOnly():
+            hx, hy = ToMM(fp.GetPosition().x), ToMM(fp.GetPosition().y)
+            for k in blocks:
+                blocks[k].append((hx - 1.4, hy - 1.4, hx + 1.4, hy + 1.4))
 
     def text_box(t):
         return text_ink(t)

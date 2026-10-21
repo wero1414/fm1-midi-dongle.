@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Photo-style renders of the case with KiCad's raytracer: the two case STEP files are mounted as 3D models on a
 scratch copy of the board (case/out/render.kicad_pcb), then kicad-cli renders it.
-Run: python3 case/render_kicad.py   ->  case/out/case_*.png"""
-import pathlib, shutil, subprocess
+Run: [CASE=print] python3 case/render_kicad.py   ->  case/out/<alu|print>_*.png"""
+import os, pathlib, shutil, subprocess
 import pcbnew
 from pcbnew import VECTOR2I_MM as MM
 if not hasattr(pcbnew.SwigPyIterator, 'next'):
@@ -11,20 +11,21 @@ if not hasattr(pcbnew.SwigPyIterator, 'next'):
 HERE = pathlib.Path(__file__).resolve().parent
 OUT = HERE / 'out'
 SRC = HERE.parent / 'fm1-midi-dongle.kicad_pcb'
+MODE = os.environ.get('CASE', 'alu')
 
 
-def build(name, top_opacity=1.0, bottom=True, top=True):
+def build(name, top_opacity=1.0, bottom=True, top=True, lift=0.0):
     b = pcbnew.LoadBoard(str(SRC))
     fp = pcbnew.FOOTPRINT(b)
     fp.SetReference('CASE'); fp.Reference().SetVisible(False); fp.Value().SetVisible(False)
     fp.SetPosition(MM(0, 0))
-    for part, op, on in (('case_top', top_opacity, top), ('case_bottom', 1.0, bottom)):
+    for part, op, on, dz in ((f'{MODE}_top', top_opacity, top, lift), (f'{MODE}_bottom', 1.0, bottom, -lift)):
         if not on:
             continue
         m = pcbnew.FP_3DMODEL()
         m.m_Filename = str(OUT / f'{part}.wrl')           # fine mesh (KiCad tessellates the STEP's curves coarsely)
         m.m_Scale = pcbnew.VECTOR3D(1 / 2.54, 1 / 2.54, 1 / 2.54)   # KiCad reads VRML in 0.1 inch units
-        m.m_Offset = pcbnew.VECTOR3D(0, 0, -0.8)          # case frame: board bottom at z 0; KiCad: board top
+        m.m_Offset = pcbnew.VECTOR3D(0, 0, -0.8 + dz)     # case frame: board bottom at z 0; KiCad: board top
         m.m_Opacity = op
         fp.Models().push_back(m)
     b.Add(fp)
@@ -43,11 +44,13 @@ def render(pcb, png, rotate, side='top', zoom=1.0, w=1600, h=1100):
 full = build('render_full')
 ghost = build('render_ghost', top_opacity=0.25)
 open_ = build('render_open', top=False)
-render(full, 'case_jack_end.png', '-55,0,-25', zoom=0.75)
-render(full, 'case_usb_end.png', '-55,0,155', zoom=0.75)
-render(full, 'case_underside.png', '-125,0,30', zoom=0.75)
-render(full, 'case_side.png', '-90,0,90', zoom=0.85)
-render(ghost, 'case_ghost.png', '-50,0,-30', zoom=0.75)
-render(open_, 'case_open.png', '-45,0,-30', zoom=0.75)
+exploded = build('render_exploded', lift=11.0)
+render(full, f'{MODE}_jack_end.png', '-55,0,-25', zoom=0.75)
+render(full, f'{MODE}_usb_end.png', '-55,0,155', zoom=0.75)
+render(full, f'{MODE}_underside.png', '-125,0,30', zoom=0.75)
+render(full, f'{MODE}_side.png', '-90,0,90', zoom=0.85)
+render(ghost, f'{MODE}_ghost.png', '-50,0,-30', zoom=0.75)
+render(open_, f'{MODE}_open.png', '-45,0,-30', zoom=0.75)
+render(exploded, f'{MODE}_exploded.png', '-60,0,-30', zoom=0.55)
 for f in SRC.parent.glob('_case_*'):
     f.unlink()

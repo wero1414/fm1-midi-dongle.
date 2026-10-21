@@ -95,6 +95,11 @@ GOALS = {
 }
 ANGLES = {'U4': (0, 180)}
 HOLE_CLEAR = 0.25
+# v6.1: two M1.6 screw holes for the milled aluminium case (case/gen_case_alu.py): one between the jacks, in front of
+# their pad rows; one beside the USB-A. Both spots are free of tracks and vias by 1.7 mm. The case's bosses press the
+# board around them (r 1.2), so the courtyard (r 1.4) keeps parts out on both faces.
+MOUNT_HOLES = {'H1': (0.0, 34.4), 'H2': (8.3, 3.0)}
+MOUNT_DRILL, MOUNT_KEEP = 1.7, 1.4
 PAD_CLEAR = 0.3                # want at least this between pad groups of different parts
 
 
@@ -248,6 +253,21 @@ def main():
             n = pad_net.get((ref, p.GetNumber()))
             if n:
                 p.SetNet(netitems[n])
+        fps[ref] = fp
+
+    # ---- case screw holes (board only: no symbol, not in the BOM or the CPL)
+    for ref, (x, y) in MOUNT_HOLES.items():
+        fp = pcbnew.FOOTPRINT(b); fp.SetReference(ref); fp.SetValue('M1.6 hole')
+        fp.SetFPID(pcbnew.LIB_ID('fm1_dongle', 'MountingHole_1.7mm_NPTH'))
+        fp.Reference().SetVisible(False); fp.Value().SetVisible(False)
+        fp.SetBoardOnly(True); fp.SetExcludedFromBOM(True); fp.SetExcludedFromPosFiles(True)
+        pad = pcbnew.PAD(fp); pad.SetAttribute(pcbnew.PAD_ATTRIB_NPTH); pad.SetShape(pcbnew.PAD_SHAPE_CIRCLE)
+        pad.SetSize(MM(MOUNT_DRILL, MOUNT_DRILL)); pad.SetDrillSize(MM(MOUNT_DRILL, MOUNT_DRILL))
+        pad.SetLayerSet(pcbnew.PAD.UnplatedHoleMask()); fp.Add(pad)
+        for layer in (pcbnew.F_CrtYd, pcbnew.B_CrtYd):
+            c = pcbnew.PCB_SHAPE(fp, pcbnew.SHAPE_T_CIRCLE); c.SetLayer(layer); c.SetWidth(FromMM(0.05))
+            c.SetCenter(MM(0, 0)); c.SetEnd(MM(MOUNT_KEEP, 0)); fp.Add(c)
+        fp.SetPosition(MM(x, y)); b.Add(fp)
         fps[ref] = fp
 
     # ---- two-pin parts: of the two orientations on their axis, keep the one that puts each signal pad nearest
